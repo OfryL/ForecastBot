@@ -1,3 +1,6 @@
+/*jshint esversion: 6 */
+
+const config = require('config');
 const Pageres = require('pageres');
 
 module.exports.getScreenshot = function(url, fileName, workingDir) {
@@ -9,8 +12,7 @@ module.exports.getScreenshot = function(url, fileName, workingDir) {
             filename: fileName,
             delay: 0,
             selector: selectorValue,
-            userAgent: 'Mozilla/5.0 (iPhone; U; CPU iPhone OS 3_2 like Mac OS X; en-us)'
-            + ' AppleWebKit/531.21.20 (KHTML, like Gecko) Mobile/7B298g',
+            userAgent: config.get('Screenshots.userAgent'),
             script: __dirname + "/runOnSite.js"
         };
 
