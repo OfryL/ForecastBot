@@ -1,14 +1,18 @@
 /*jshint esversion: 6 */
 
 const config = require('config');
-const Telegraf = require('telegraf');
-const Screenshot = require('./src/screenshot/screenshot');
+const Screenshot = require('./screenshot/screenshot');
 const fs = require('fs');
+const log4js = require('log4js');
 
-const handleForcastReq = function(ctx) {
+const logger = log4js.getLogger("forcastbot");
+
+
+function handleForcastReq(ctx) {
+  logger.debug("processing request");
   let user = {username: ctx.message.from.username};
   if (user.username !== 'RedBeardKnight') {
-    console.log("Unauthorize: " + user.username);
+    logger.warn("Unauthorize: " + user.username);
     ctx.reply("Unauthorize");
     return;
   }
@@ -29,30 +33,33 @@ const handleForcastReq = function(ctx) {
     (path) => {
       isDone = true;
       ctx.replyWithPhoto({
-        source: fs.readFileSync('./forcast.png')
+        source: fs.readFileSync(path)
       }, {
         caption: 'Wave forcast notification for tel-aviv\n<a href="https://magicseaweed.com/Hilton-Surf-Report/3658/">More Info</a>',
         parse_mode: 'HTML'
       }).catch((error) => {
-        console.log(error.code);
-        console.log(error.response.description); // => { ok: false, error_code: 400, description: 'Bad Request: chat not found' }
+        logger.error(error.code);
+        logger.error(error.response.description); // => { ok: false, error_code: 400, description: 'Bad Request: chat not found' }
       }).then((ctx) => {
-        console.log('done');
+        logger.debug('done');
       });
     },
     (err) => {
-      console.log(err);
+      logger.error(err);
     }).catch((error) => {
-    console.log(error);
+    logger.error(error);
   });
-};
+}
 
-var botUsername;
-const bot = new Telegraf(config.get('telegramBot.token'));
-bot.start((ctx) => ctx.reply('Welcome!'));
-bot.telegram.getMe().then(function(me) {
-  botUsername = me.username;
-  bot.command('/getForcast@' + botUsername, (ctx) => handleForcastReq(ctx));
-});
-bot.command('/getForcast', (ctx) => handleForcastReq(ctx));
-bot.startPolling();
+module.exports.setupForcastBot = function(bot) {
+  logger.debug("seting up bot");
+
+    bot.start((ctx) => ctx.reply('Welcome!'));
+    bot.telegram.getMe().then(function(me) {
+      botUsername = me.username;
+      bot.command('/getForcast@' + botUsername, (ctx) => handleForcastReq(ctx));
+      bot.botUsername = botUsername;
+      logger.debug("bot name: " + botUsername);
+    });
+    bot.command('/getForcast', (ctx) => handleForcastReq(ctx));
+};

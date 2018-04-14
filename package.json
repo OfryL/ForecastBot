@@ -2,7 +2,7 @@
   "name": "israelsurfforcastbot",
   "version": "1.0.0",
   "description": "a telegram bot for wave forcasting of the israeli coast",
-  "main": "app.js",
+  "main": "src/app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -17,11 +17,23 @@
   },
   "homepage": "https://github.com/OfryL/IsraelSurfForcastBot#readme",
   "dependencies": {
-    "pageres": "^4.5.1",
-    "telegraf": "^3.20.0",
-    "config": "^1.30.0"
+    "pageres": "4.5.1",
+    "telegraf": "3.20.0",
+    "config": "1.30.0",
+    "log4js": "2.5.3",
+    "localtunnel": "1.9.0",
+    "fastify": "1.2.1"
+  },
+  "devDependencies": {
+    "rimraf": "latest"
   },
   "scripts": {
-    "start": "node app.js"
+    "start": "node src/app.js",
+    "clean": "rimraf package-lock.json ./node_modules/ ./lib/*",
+    "clean:compile": "rimraf ./lib/*",
+    "deploy": "now --public",
+    "deploy:clean": "now rm israelsurfforcastbot -y && now --public",
+    "deploy:dev": "now --name tester --public",
+    "redeploy:dev": "now rm tester -y && now --name tester --public"
   }
 }
