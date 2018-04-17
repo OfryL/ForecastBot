@@ -18,7 +18,7 @@ function configLogs() {
       default: {
         // process.env.NODE_ENV !== 'production'
         appenders: ['console'],
-        level: config.get('logger.level')
+        level: config.get('logger.level.default')
       }
     },
     "replaceConsole": true
@@ -31,7 +31,7 @@ const forcastbot = require('./forcastbot');
 const localtunnel = require('localtunnel');
 const logger = log4js.getLogger("app");
 
-const fastify = require('fastify')({logger: {level: config.get('logger.level'), prettyPrint: true}});
+const fastify = require('fastify')({logger: {level: config.get('logger.level.fastify'), prettyPrint: true}});
 
 const localtunnelport = config.get('httpserver.localtunnelport');
 
@@ -46,7 +46,6 @@ function setupTunnel(onCloseCallback) {
       resolve(tunnel.url);
     });
     tunnel.on('close', function() {
-      // tunnels are closed
       logger.warn('tunnel closed');
       onCloseCallback();
     });

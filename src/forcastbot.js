@@ -9,7 +9,7 @@ const logger = log4js.getLogger("forcastbot");
 
 
 function handleForcastReq(ctx) {
-  logger.debug("processing request");
+  logger.info("processing request");
   let user = {username: ctx.message.from.username};
   if (user.username !== 'RedBeardKnight') {
     logger.warn("Unauthorize: " + user.username);
