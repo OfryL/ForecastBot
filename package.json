@@ -4,7 +4,15 @@
   "description": "a telegram bot for wave forcasting of the israeli coast",
   "main": "src/app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/app.js",
+    "start:dev": "cross-env NODE_ENV=development node src/app.js",
+    "start:prod": "cross-env NODE_ENV=production node src/app.js",
+    "clean": "rimraf package-lock.json ./node_modules/ ./lib/*",
+    "clean:compile": "rimraf ./lib/*",
+    "deploy": "now --name prod -e NODE_ENV=production --public",
+    "deploy:clean": "now rm prod -y",
+    "deploy:dev": "now --name dev --public",
+    "redeploy:dev": "now rm dev -y && now --name dev --public"
   },
   "repository": {
     "type": "git",
@@ -17,27 +25,18 @@
   },
   "homepage": "https://github.com/OfryL/IsraelSurfForcastBot#readme",
   "dependencies": {
+    "config": "1.30.0",
+    "fastify": "1.2.1",
+    "localtunnel": "1.9.0",
+    "log4js": "2.5.3",
+    "moment": "^2.22.1",
     "pageres": "4.5.1",
     "telegraf": "3.20.0",
-    "config": "1.30.0",
-    "log4js": "2.5.3",
-    "localtunnel": "1.9.0",
-    "fastify": "1.2.1"
+    "moment": "2.22.1"
   },
   "devDependencies": {
     "rimraf": "latest",
-    "cross-env": "latest"
-  },
-  "scripts": {
-    "start": "node src/app.js",
-    "start:dev": "cross-env NODE_ENV=development node src/app.js",
-    "start:prod": "cross-env NODE_ENV=production node src/app.js",
-
-    "clean": "rimraf package-lock.json ./node_modules/ ./lib/*",
-    "clean:compile": "rimraf ./lib/*",
-    "deploy": "now --public",
-    "deploy:clean": "now rm israelsurfforcastbot -y && now --public",
-    "deploy:dev": "now --name tester --public",
-    "redeploy:dev": "now rm tester -y && now --name tester --public"
+    "cross-env": "latest",
+    "now": "latest"
   }
 }

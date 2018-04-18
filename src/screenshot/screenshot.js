@@ -1,5 +1,6 @@
 /*jshint esversion: 6 */
 
+var moment = require('moment');
 const config = require('config');
 const Pageres = require('pageres');
 const fs = require('fs');
@@ -10,11 +11,53 @@ const log4js = require('log4js');
 const logger = log4js.getLogger("screenshot");
 
 module.exports = function() {
+  'use strict';
+
+  const props = {};
   const selectorValue = 'body > div.cover > div.cover-inner > div.pages.clear-left.clear-right > div > div.msw-fc.msw-js-forecast > div:nth-child(2) > div:nth-child(2) > div > div > div.msw-col-fluid > div > div:nth-child(2) > div > div';
 
-  function getScreenshot(url, fileName, workingDir) {
+  function checkIfFileExist() {
+    return new Promise(function(resolve, reject) {
 
-    const options = {
+      if (!fs.existsSync(props.fullFilePathNameExt)) {
+        resolve(false);
+      }
+
+      const stats = fs.statSync(props.fullFilePathNameExt);
+
+      const startDate = moment(new Date(util.inspect(stats.mtime)), 'YYYY-M-DD HH:mm:ss');
+      const endDate = moment(new Date(), 'YYYY-M-DD HH:mm:ss');
+
+      if (endDate.diff(startDate, 'days') === 0 && endDate.diff(startDate, 'hours') === 0){
+        //isExist true
+        resolve(true);
+      } else {
+        //isExist false
+        resolve(false);
+      }
+    });
+  }
+
+  function getScreenshotFromWebPage(resolve, reject) {
+    logger.debug("getting screenshot started");
+    let pageres = new Pageres()
+      .src(props.url, ['400X480'], props.options)
+      .dest(props.workingDir)
+      .run()
+      .then(() => {
+        logger.debug('screenshot saved to ' + props.fullFilePathNameExt);
+        resolve(props.fullFilePathNameExt);
+      }, (err) => {
+        logger.error(err);
+        reject(err);
+      });
+  }
+
+  function getScreenshot(url, fileName, workingDir) {
+    props.url = url;
+    props.fileName = fileName;
+    props.workingDir = workingDir;
+    props.options = {
       crop: true,
       filename: fileName,
       delay: 0,
@@ -23,31 +66,20 @@ module.exports = function() {
       script: __dirname + "/runOnSite.js"
     };
 
-    const fullFilePathNameExt = workingDir + '/' + fileName + '.png';
+    props.fullFilePathNameExt = workingDir + '/' + fileName + '.png';
 
     return new Promise(function(resolve, reject) {
-
-      var stats = fs.statSync(fullFilePathNameExt);
-      var mtime = new Date(util.inspect(stats.mtime));
-      logger.error(mtime);
-
-      getScreenshotFromWebPage = function(resolve, reject) {
-        logger.debug("getting screenshot started");
-        let pageres = new Pageres()
-          .src(url, ['400X480'], options)
-          .dest(workingDir)
-          .run()
-          .then(() => {
-            logger.debug('screenshot saved to ' + fullFilePathNameExt);
-            resolve(fullFilePathNameExt);
-          }, (err) => {
-            logger.error(err);
-            reject(err);
-          });
-      };
-
+      checkIfFileExist().then((isExist) => {
+        if (isExist) {
+          logger.debug("screenshot exist");
+          resolve(props.fullFilePathNameExt);
+        } else {
+          getScreenshotFromWebPage(resolve, reject);
+        }
+      });
     });
   }
+
 
   return {
     getScreenshot
