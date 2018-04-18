@@ -3,7 +3,7 @@
 const config = require('config');
 const log4js = require('log4js');
 
-function configLogs() {
+const configLogs = function() {
   log4js.configure({
     appenders: {
       appLogs: {
@@ -23,17 +23,18 @@ function configLogs() {
     },
     "replaceConsole": true
   });
-}
-configLogs();
+}();
 
 const Telegraf = require('telegraf');
 const forcastbot = require('./forcastbot');
 const localtunnel = require('localtunnel');
 const logger = log4js.getLogger("app");
+logger.info("running on '"+ process.env.NODE_ENV +"' env");
+logger.debug("logging lvl set to - " + config.get('logger.level.default'));
 
 const fastify = require('fastify')({logger: {level: config.get('logger.level.fastify'), prettyPrint: true}});
 
-const localtunnelport = config.get('httpserver.localtunnelport');
+const localtunnelport = config.get('telegramBot.httpserver.localtunnelport');
 
 function setupTunnel(onCloseCallback) {
   return new Promise((resolve, reject) => {
@@ -72,16 +73,26 @@ function setupFastisyServer(telegramBot) {
 }
 
 
-setupTunnel(() => {}).then((tunnelUrl) => {
+logger.info("connecting telegram api");
+const bot = new Telegraf(config.get('telegramBot.token'));
 
-  logger.info("connecting telegram api");
-  const bot = new Telegraf(config.get('telegramBot.token'));
+forcastbot.setupForcastBot(bot);
 
-  forcastbot.setupForcastBot(bot);
-
-  bot.telegram.setWebhook(tunnelUrl + '/secret-path');
-
-  setupFastisyServer(bot);
-}).catch((err) => {
-  logger.error("Error on tunnel: " + err);
-});
+if (config.get('telegramBot.tunnel')){
+  setupTunnel(() => {}).then((tunnelUrl) => {
+    bot.telegram.setWebhook(tunnelUrl + '/secret-path');
+    setupFastisyServer(bot);
+  }).catch((err) => {
+    logger.error("Error on tunnel: " + err);
+  });
+} else {
+  logger.debug("clearing old webhook");
+  bot.telegram.deleteWebhook().then((success) => {
+    if (success) {
+      logger.debug("start bot on polling mode");
+      bot.startPolling();
+    } else {
+      logger.error("error clearing old webhook");
+    }
+  });
+}

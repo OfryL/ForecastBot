@@ -25,10 +25,14 @@
     "fastify": "1.2.1"
   },
   "devDependencies": {
-    "rimraf": "latest"
+    "rimraf": "latest",
+    "cross-env": "latest"
   },
   "scripts": {
     "start": "node src/app.js",
+    "start:dev": "cross-env NODE_ENV=development node src/app.js",
+    "start:prod": "cross-env NODE_ENV=production node src/app.js",
+
     "clean": "rimraf package-lock.json ./node_modules/ ./lib/*",
     "clean:compile": "rimraf ./lib/*",
     "deploy": "now --public",
