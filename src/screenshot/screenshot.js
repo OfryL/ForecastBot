@@ -1,6 +1,6 @@
 /*jshint esversion: 6 */
 
-var moment = require('moment');
+const moment = require('moment');
 const config = require('config');
 const Pageres = require('pageres');
 const fs = require('fs');
