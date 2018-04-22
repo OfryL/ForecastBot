@@ -12,7 +12,17 @@ const managerUsername = "RedBeardKnight";
 
 const getForcastCmd = 'getForcast';
 const subscribeCmd = 'subscribe';
+
 const subscriberListCmd = 'subscriberList';
+const subscriberMulticastCmd = 'postToSubscribers';
+
+const savePath = process.cwd() + '/lib/screenshots';
+// const savePath = __dirname;
+
+const urls = {
+  'TelAviv': {name: 'Tel-Aviv - Hilton',url: 'https://magicseaweed.com/Hilton-Surf-Report/3658/', filename: 'forcastTelAviv'},
+  'Haifa': {name: 'Haifa - The Peak', url: 'https://magicseaweed.com/Haifa-The-Peak-Surf-Report/3671/', filename: 'forcastHaifa'}
+};
 
 module.exports = function() {
   var _bot;
@@ -20,7 +30,7 @@ module.exports = function() {
   function logError(ctx, err) {
     logger.error(err);
     if (_bot) {
-      _bot.telegram.sendMessage(367370312, "Error: " + err);
+      _bot.telegram.sendMessage(367370312, "#Error: " + err);
     }
   }
 
@@ -32,6 +42,19 @@ module.exports = function() {
 
   function handleForcastReq(ctx) {
     logger.info("processing request (ChatID: " + ctx.message.chat.id + ")");
+
+    function getSpotFromCommand(text){
+      let args = text.split(" ");
+      if (args.length > 0) {
+        let spot = urls[args[1]];
+        if (spot) {
+          return spot;
+        }
+      }
+      return urls.TelAviv;
+    }
+
+    const spot = getSpotFromCommand(ctx.message.text);
 
     var isDone = false;
     var replyWithChatAction = ctx.replyWithChatAction;
@@ -48,12 +71,13 @@ module.exports = function() {
       }
     }, 3000);
 
-    Screenshot.getScreenshot('https://magicseaweed.com/Hilton-Surf-Report/3658/', 'forcast', __dirname).then(
+    logger.debug(spot);
+    Screenshot.getScreenshot(spot.url, spot.filename, savePath).then(
       (path) => {
         ctx.replyWithPhoto({
           source: fs.readFileSync(path)
         }, {
-          caption: 'Wave forcast notification for tel-aviv\n<a href="https://magicseaweed.com/Hilton-Surf-Report/3658/">More Info</a>',
+          caption: 'Wave forcast notification for '+ spot.name +'\n<a href="'+ spot.url +'">More Info</a>',
           parse_mode: 'HTML'
         }).catch((error) => {
           logError(ctx, error.code);
@@ -86,6 +110,15 @@ module.exports = function() {
     ctx.reply('subscribers:' + subscribeDao.getAllSubscribers());
   }
 
+  function handleSubscriberMulticastReq(ctx) {
+subscribeDao.getAllSubscribers().forEach((v) => {
+  _bot.telegram.sendMessage(v, "test").catch((err) => {
+    logError(ctx, 'Error sending podcast: ' + err);
+  });
+});
+  }
+
+
   function registerManagerCmd(bot, command, func, botUsername) {
     const authUser = function(ctx, func) {
       let user = {
@@ -109,7 +142,6 @@ module.exports = function() {
     }
   }
 
-
   function setupForcastBot(bot) {
     _bot = bot;
     logger.debug("seting up bot");
@@ -124,6 +156,7 @@ module.exports = function() {
       registerCmd(bot, subscribeCmd, handleSubscribeReq, botUsername);
 
       registerManagerCmd(bot, subscriberListCmd, handleSubscribeListReq, botUsername);
+      registerManagerCmd(bot, subscriberMulticastCmd, handleSubscriberMulticastReq, botUsername);
 
     });
   }
