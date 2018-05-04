@@ -31,7 +31,8 @@
     "log4js": "2.5.3",
     "moment": "2.22.1",
     "pageres": "4.5.1",
-    "telegraf": "3.20.0"
+    "telegraf": "3.20.0",
+    "nedb": "1.8.0"
   },
   "devDependencies": {
     "cross-env": "latest",

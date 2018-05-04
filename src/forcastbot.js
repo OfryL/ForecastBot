@@ -20,8 +20,16 @@ const savePath = process.cwd() + '/lib/screenshots';
 // const savePath = __dirname;
 
 const urls = {
-  'TelAviv': {name: 'Tel-Aviv - Hilton',url: 'https://magicseaweed.com/Hilton-Surf-Report/3658/', filename: 'forcastTelAviv'},
-  'Haifa': {name: 'Haifa - The Peak', url: 'https://magicseaweed.com/Haifa-The-Peak-Surf-Report/3671/', filename: 'forcastHaifa'}
+  'TelAviv': {
+    name: 'Tel-Aviv - Hilton',
+    url: 'https://magicseaweed.com/Hilton-Surf-Report/3658/',
+    filename: 'forcastTelAviv'
+  },
+  'Haifa': {
+    name: 'Haifa - The Peak',
+    url: 'https://magicseaweed.com/Haifa-The-Peak-Surf-Report/3671/',
+    filename: 'forcastHaifa'
+  }
 };
 
 module.exports = function() {
@@ -34,6 +42,25 @@ module.exports = function() {
     }
   }
 
+  function getSpotFromCommand(text) {
+    let args = text.split(" ");
+    if (args.length > 0) {
+      let spot = urls[args[1]];
+      if (spot) {
+        return spot;
+      }
+    }
+    return urls.TelAviv;
+  }
+
+  function executeMulticastReq(func) {
+    subscribeDao.getAllSubscribers().then((subscribers) => {
+      subscribers.forEach((s) => {
+        func(_bot.telegram, s);
+      });
+    });
+  }
+
   function handleStartCmd(ctx) {
     logger.debug(ctx.message.text);
     ctx.reply('Welcome to Israel`s first waves forcast telegram bot.' +
@@ -42,17 +69,6 @@ module.exports = function() {
 
   function handleForcastReq(ctx) {
     logger.info("processing request (ChatID: " + ctx.message.chat.id + ")");
-
-    function getSpotFromCommand(text){
-      let args = text.split(" ");
-      if (args.length > 0) {
-        let spot = urls[args[1]];
-        if (spot) {
-          return spot;
-        }
-      }
-      return urls.TelAviv;
-    }
 
     const spot = getSpotFromCommand(ctx.message.text);
 
@@ -71,13 +87,12 @@ module.exports = function() {
       }
     }, 3000);
 
-    logger.debug(spot);
     Screenshot.getScreenshot(spot.url, spot.filename, savePath).then(
       (path) => {
         ctx.replyWithPhoto({
           source: fs.readFileSync(path)
         }, {
-          caption: 'Wave forcast notification for '+ spot.name +'\n<a href="'+ spot.url +'">More Info</a>',
+          caption: 'Wave forcast notification for ' + spot.name + '\n<a href="' + spot.url + '">More Info</a>',
           parse_mode: 'HTML'
         }).catch((error) => {
           logError(ctx, error.code);
@@ -97,27 +112,63 @@ module.exports = function() {
   }
 
   function handleSubscribeReq(ctx) {
-    if (subscribeDao.getSubscriber(ctx.message.chat.id) !== -1) {
-      subscribeDao.removeSubscriber(ctx.message.chat.id);
-      ctx.reply('You are now un-register :( ');
-    } else {
-      subscribeDao.addSubscriber(ctx.message.chat.id);
-      ctx.reply('You are now register to forcast updates!');
-    }
+    let chatId = ctx.message.chat.id;
+    subscribeDao.getSubscriber(chatId).then((subscriber) => {
+      if (subscriber.length) {
+        subscribeDao.removeSubscriber(chatId).then(() => {
+          ctx.reply('You are now un-register :( ');
+        }).catch((err) => {
+          ctx.reply('Failed to un-register!');
+        });
+      } else {
+        subscribeDao.addSubscriber(chatId, 'TelAviv').then(() => {
+          ctx.reply('You are now register to forcast updates!');
+        }).catch((err) => {
+          ctx.reply('Failed to register!');
+        });
+      }
+    }).catch((err) => {
+      ctx.reply('Failed!');
+    });
   }
 
   function handleSubscribeListReq(ctx) {
-    ctx.reply('subscribers:' + subscribeDao.getAllSubscribers());
+    subscribeDao.getAllSubscribers().then((subscribers) => {
+      let chatIds = subscribers.map((s) => s.chatId);
+      ctx.reply('subscribers: ' + chatIds);
+    });
   }
 
   function handleSubscriberMulticastReq(ctx) {
-subscribeDao.getAllSubscribers().forEach((v) => {
-  _bot.telegram.sendMessage(v, "test").catch((err) => {
-    logError(ctx, 'Error sending podcast: ' + err);
-  });
-});
+    executeMulticastReq((bot, subscriber) => {
+      bot.sendMessage(subscriber.chatId, "test").catch((err) => {
+        logError(ctx, 'Error sending podcast: ' + err);
+      });
+    });
   }
 
+  function subscriberForcastMulticast() {
+    executeMulticastReq((bot, subscriber) => {
+      const spot = getSpotFromCommand(subscriber.spot);
+
+      Screenshot.getScreenshot(spot.url, spot.filename, savePath).then(
+        (path) => {
+          bot.sendPhoto(subscriber.chatId, {
+            source: fs.readFileSync(path)
+          }, {
+            caption: 'Wave forcast notification for ' + spot.name + '\n<a href="' + spot.url + '">More Info</a>',
+            parse_mode: 'HTML'
+          }).catch((error) => {
+            logger.error(error.code);
+            logger.error(error.response.description);
+          }).then((ctx) => {
+            logger.debug('done');
+          });
+        }).catch((err) => {
+        logger.error('error while getting the screenshot: ' + err);
+      });
+    });
+  }
 
   function registerManagerCmd(bot, command, func, botUsername) {
     const authUser = function(ctx, func) {
@@ -162,6 +213,7 @@ subscribeDao.getAllSubscribers().forEach((v) => {
   }
 
   return {
-    setupForcastBot
+    setupForcastBot,
+    subscriberForcastMulticast
   };
 }();
