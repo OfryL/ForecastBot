@@ -5,6 +5,7 @@ const Screenshot = require('./screenshot/screenshot');
 const fs = require('fs');
 const log4js = require('log4js');
 const subscribeDao = require('./subscribeDao/subscribeDao');
+const subscriberMulticastJob = require('./subscriberMulticastJob');
 
 const logger = log4js.getLogger("forcastbot");
 
@@ -31,6 +32,10 @@ const urls = {
     filename: 'forcastHaifa'
   }
 };
+
+const START_MSG = 'Welcome to Israel`s first waves forcast telegram bot.\n' +
+  'send me /getForcast to see more!\n' +
+  '<b>New</b> - you can /subscribe for every day forcast, stay tuned!';
 
 module.exports = function() {
   var _bot;
@@ -63,8 +68,7 @@ module.exports = function() {
 
   function handleStartCmd(ctx) {
     logger.debug(ctx.message.text);
-    ctx.reply('Welcome to Israel`s first waves forcast telegram bot.' +
-      ' send me /getForcast to see more! ');
+    ctx.telegram.sendMessage(ctx.message.chat.id, START_MSG, {parse_mode:'HTML'} );
   }
 
   function handleForcastReq(ctx) {
@@ -170,6 +174,11 @@ module.exports = function() {
     });
   }
 
+  function startSubscriberForcastMulticastJob() {
+    logger.debug('setup cron job');
+    subscriberMulticastJob.setup(subscriberForcastMulticast);
+  }
+
   function registerManagerCmd(bot, command, func, botUsername) {
     const authUser = function(ctx, func) {
       let user = {
@@ -203,6 +212,8 @@ module.exports = function() {
       bot.botUsername = botUsername;
       logger.info("bot name: " + botUsername);
 
+      startSubscriberForcastMulticastJob();
+
       registerCmd(bot, getForcastCmd, handleForcastReq, botUsername);
       registerCmd(bot, subscribeCmd, handleSubscribeReq, botUsername);
 
@@ -213,7 +224,6 @@ module.exports = function() {
   }
 
   return {
-    setupForcastBot,
-    subscriberForcastMulticast
+    setupForcastBot
   };
 }();
