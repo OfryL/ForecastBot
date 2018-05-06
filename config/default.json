@@ -1,5 +1,6 @@
 {
   "logger": {
+    "appenders": ["console"],
     "level": {
       "default": "debug",
       "fastify": "info"

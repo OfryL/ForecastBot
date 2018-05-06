@@ -1,5 +1,6 @@
 {
   "logger": {
+    "appenders": ["appLogs"],
     "level": {
       "default": "info",
       "fastify": "warn"
@@ -10,7 +11,7 @@
   },
   "telegramBot": {
     "token": "",
-    "tunnel": true,
+    "tunnel": false,
     "httpserver": {
       "localtunnelport": 3000
     }

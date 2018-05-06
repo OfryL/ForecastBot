@@ -16,8 +16,7 @@ const configLogs = function() {
     },
     categories: {
       default: {
-        // process.env.NODE_ENV !== 'production'
-        appenders: ['console'],
+        appenders: config.get('logger.appenders'),
         level: config.get('logger.level.default')
       }
     },
