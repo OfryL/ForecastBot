@@ -9,9 +9,10 @@ const subscriberMulticastJob = require('./subscriberMulticastJob');
 
 const logger = log4js.getLogger("forcastbot");
 
-const managerUsername = "RedBeardKnight";
+const managerUsername = "RedBeardKnight",
+      managerChatId = 367370312;
 
-const getForcastCmd = 'getForcast';
+const getForcastCmd = 'getforcast';
 const subscribeCmd = 'subscribe';
 
 const subscriberListCmd = 'subscriberList';
@@ -42,8 +43,13 @@ module.exports = function() {
 
   function logError(ctx, err) {
     logger.error(err);
+    if (err.stack) {
+      logger.error(err.stack);
+    }
     if (_bot) {
-      _bot.telegram.sendMessage(367370312, "#Error: " + err);
+      _bot.telegram.sendMessage(managerChatId, "#Error: " + err).catch((err) => {
+        logger.error('Failed to send error to + ' + managerUsername);
+      });
     }
   }
 
@@ -163,13 +169,13 @@ module.exports = function() {
             caption: 'Wave forcast notification for ' + spot.name + '\n<a href="' + spot.url + '">More Info</a>',
             parse_mode: 'HTML'
           }).catch((error) => {
-            logger.error(error.code);
-            logger.error(error.response.description);
+            logError(error.code);
+            logError(error.response.description);
           }).then((ctx) => {
             logger.debug('done');
           });
         }).catch((err) => {
-        logger.error('error while getting the screenshot: ' + err);
+        logError('error while getting the screenshot: ' + err);
       });
     });
   }
@@ -179,7 +185,7 @@ module.exports = function() {
     subscriberMulticastJob.setup(subscriberForcastMulticast);
   }
 
-  function registerManagerCmd(bot, command, func, botUsername) {
+  function registerManagerCmd(bot, command, func) {
     const authUser = function(ctx, func) {
       let user = {
         username: ctx.message.from.username
@@ -192,35 +198,35 @@ module.exports = function() {
       }
     };
 
-    registerCmd(bot, command, (ctx) => authUser(ctx, func), botUsername);
+    registerCmd(bot, command, (ctx) => authUser(ctx, func));
   }
 
-  function registerCmd(bot, command, func, botUsername) {
+  function registerCmd(bot, command, func) {
     bot.command('/' + command, (ctx) => func(ctx));
-    if (botUsername) {
-      bot.command('/' + command + '@' + botUsername, (ctx) => func(ctx));
-    }
   }
 
   function setupForcastBot(bot) {
     _bot = bot;
     logger.debug("seting up bot");
 
+    bot.catch((err) => {
+      logError('Ooops', err);
+    });
+
     bot.start((ctx) => handleStartCmd(ctx));
     bot.telegram.getMe().then(function(me) {
-      botUsername = me.username;
-      bot.botUsername = botUsername;
-      logger.info("bot name: " + botUsername);
-
-      startSubscriberForcastMulticastJob();
-
-      registerCmd(bot, getForcastCmd, handleForcastReq, botUsername);
-      registerCmd(bot, subscribeCmd, handleSubscribeReq, botUsername);
-
-      registerManagerCmd(bot, subscriberListCmd, handleSubscribeListReq, botUsername);
-      registerManagerCmd(bot, subscriberMulticastCmd, handleSubscriberMulticastReq, botUsername);
-
+      bot.options.username = botInfo.username;
+      logger.info("bot name: " + botInfo.username);
     });
+
+    startSubscriberForcastMulticastJob();
+
+    registerCmd(bot, getForcastCmd, handleForcastReq);
+    registerCmd(bot, subscribeCmd, handleSubscribeReq);
+
+    registerManagerCmd(bot, subscriberListCmd, handleSubscribeListReq);
+    registerManagerCmd(bot, subscriberMulticastCmd, handleSubscriberMulticastReq);
+
   }
 
   return {
