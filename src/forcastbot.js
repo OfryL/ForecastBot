@@ -50,6 +50,7 @@ const START_MSG = 'Welcome to Israel`s first waves forcast telegram bot.\n' +
 
 module.exports = function() {
   var _bot;
+  var botUsername;
 
   function logError(ctx, err) {
     logger.error(err);
@@ -112,7 +113,7 @@ module.exports = function() {
         ctx.replyWithPhoto({
           source: fs.readFileSync(path)
         }, {
-          caption: 'Wave forcast notification for ' + spot.name + '\n<a href="' + spot.url + '">More Info</a>',
+          caption: 'Wave forcast notification for ' + spot.name + '\n<a href="' + spot.url + '">More Info</a>\n@' + botUsername + ' to subscribe me!',
           parse_mode: 'HTML'
         }).catch((error) => {
           logError(ctx, error.code);
@@ -226,6 +227,7 @@ module.exports = function() {
     bot.start((ctx) => handleStartCmd(ctx));
     bot.telegram.getMe().then(function(me) {
       bot.options.username = me.username;
+      botUsername = me.username;
       logger.info("bot name: " + me.username);
     });
 
