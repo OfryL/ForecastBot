@@ -31,11 +31,21 @@ const urls = {
     name: 'Haifa - The Peak',
     url: 'https://magicseaweed.com/Haifa-The-Peak-Surf-Report/3671/',
     filename: 'forcastHaifa'
+  },
+  'Ashqelon': {
+    name: 'Ashqelon',
+    url: 'https://magicseaweed.com/Ashqelon-Surf-Report/3811/',
+    filename: 'forcastAshqelon'
+  },
+  'Ashdod': {
+    name: 'Ashdod',
+    url: 'https://magicseaweed.com/Ashdod-Surf-Report/4219/',
+    filename: 'forcastAshdod'
   }
 };
 
 const START_MSG = 'Welcome to Israel`s first waves forcast telegram bot.\n' +
-  'send me /getForcast to see more!\n' +
+  'send me /getforcast to see more!\n' +
   '<b>New</b> - you can /subscribe for every day forcast, stay tuned!';
 
 module.exports = function() {
@@ -215,8 +225,8 @@ module.exports = function() {
 
     bot.start((ctx) => handleStartCmd(ctx));
     bot.telegram.getMe().then(function(me) {
-      bot.options.username = botInfo.username;
-      logger.info("bot name: " + botInfo.username);
+      bot.options.username = me.username;
+      logger.info("bot name: " + me.username);
     });
 
     startSubscriberForcastMulticastJob();
