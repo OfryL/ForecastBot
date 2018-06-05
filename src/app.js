@@ -1,5 +1,3 @@
-/*jshint esversion: 6 */
-
 const config = require('config');
 const log4js = require('log4js');
 

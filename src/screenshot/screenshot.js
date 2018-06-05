@@ -1,5 +1,3 @@
-/*jshint esversion: 6 */
-
 const moment = require('moment');
 const config = require('config');
 const Pageres = require('pageres');

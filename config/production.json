@@ -11,6 +11,7 @@
   },
   "telegramBot": {
     "token": "",
+    "loggerChatId": "",
     "tunnel": false,
     "httpserver": {
       "localtunnelport": 3000

@@ -1,5 +1,3 @@
-/*jshint esversion: 6 */
-
 const config = require('config');
 const Screenshot = require('./screenshot/screenshot');
 const fs = require('fs');
@@ -8,9 +6,7 @@ const subscribeDao = require('./subscribeDao/subscribeDao');
 const subscriberMulticastJob = require('./subscriberMulticastJob');
 
 const logger = log4js.getLogger("forcastbot");
-
-const managerUsername = "RedBeardKnight",
-      managerChatId = 367370312;
+const telegramLogger = require('./telegramLogger');
 
 const getForcastCmd = 'getforcast';
 const subscribeCmd = 'subscribe';
@@ -54,14 +50,10 @@ module.exports = function() {
 
   function logError(ctx, err) {
     logger.error(err);
-    if (err.stack) {
+    if (err && err.stack) {
       logger.error(err.stack);
     }
-    if (_bot) {
-      _bot.telegram.sendMessage(managerChatId, "#Error: " + err).catch((err) => {
-        logger.error('Failed to send error to + ' + managerUsername);
-      });
-    }
+    telegramLogger.logErr(err);
   }
 
   function getSpotFromCommand(text) {
@@ -138,14 +130,18 @@ module.exports = function() {
       if (subscriber.length) {
         subscribeDao.removeSubscriber(chatId).then(() => {
           ctx.reply('You are now un-register :( ');
+          telegramLogger.logInfo("Someone left as :(");
         }).catch((err) => {
           ctx.reply('Failed to un-register!');
+          logError(err);
         });
       } else {
         subscribeDao.addSubscriber(chatId, 'TelAviv').then(() => {
           ctx.reply('You are now register to forcast updates!');
+          telegramLogger.logInfo("Someone join as :)");
         }).catch((err) => {
           ctx.reply('Failed to register!');
+          logError(err);
         });
       }
     }).catch((err) => {
