@@ -6,7 +6,7 @@ const subscribeDao = require('./subscribeDao/subscribeDao');
 const subscriberMulticastJob = require('./subscriberMulticastJob');
 
 const logger = log4js.getLogger("forcastbot");
-const telegramLogger = require('./telegramLogger');
+const telegramLogger = require('./errorHandler/telegramLogger');
 
 const getForcastCmd = 'getforcast';
 const subscribeCmd = 'subscribe';
@@ -49,11 +49,7 @@ module.exports = function() {
   var botUsername;
 
   function logError(ctx, err) {
-    logger.error(err);
-    if (err && err.stack) {
-      logger.error(err.stack);
-    }
-    telegramLogger.logErr(err);
+    telegramLogger.extLogErr(logger, err, null);
   }
 
   function getSpotFromCommand(text) {
@@ -72,11 +68,13 @@ module.exports = function() {
       subscribers.forEach((s) => {
         func(_bot.telegram, s);
       });
+    }).catch((error) => {
+      logError(ctx, '#error executeMulticastReq: ' + error);
     });
   }
 
   function handleStartCmd(ctx) {
-    logger.debug(ctx.message.text);
+    telegramLogger.logInfo("Someone /start me");
     ctx.telegram.sendMessage(ctx.message.chat.id, START_MSG, {parse_mode:'HTML'} );
   }
 
@@ -117,7 +115,7 @@ module.exports = function() {
       (err) => {
         logError(ctx, 'error while getting the screenshot: ' + err);
       }).catch((error) => {
-      logError(ctx, error);
+      logError(ctx, 'error while getting the screenshot2: ' + error);
     }).then(() => { //finaly
       isDone = true;
       clearInterval(intervalObj);
@@ -130,7 +128,7 @@ module.exports = function() {
       if (subscriber.length) {
         subscribeDao.removeSubscriber(chatId).then(() => {
           ctx.reply('You are now un-register :( ');
-          telegramLogger.logInfo("Someone left as :(");
+          telegramLogger.logInfo("Someone left us :(");
         }).catch((err) => {
           ctx.reply('Failed to un-register!');
           logError(err);
@@ -138,7 +136,7 @@ module.exports = function() {
       } else {
         subscribeDao.addSubscriber(chatId, 'TelAviv').then(() => {
           ctx.reply('You are now register to forcast updates!');
-          telegramLogger.logInfo("Someone join as :)");
+          telegramLogger.logInfo("Someone join us :)");
         }).catch((err) => {
           ctx.reply('Failed to register!');
           logError(err);
@@ -153,6 +151,8 @@ module.exports = function() {
     subscribeDao.getAllSubscribers().then((subscribers) => {
       let chatIds = subscribers.map((s) => s.chatId);
       ctx.reply('subscribers: ' + chatIds);
+    }).catch((error) => {
+      logError(ctx, '#error handleSubscribeListReq: ' + error);
     });
   }
 
@@ -165,10 +165,11 @@ module.exports = function() {
   }
 
   function subscriberForcastMulticast() {
+    //// TODO:  to here
     executeMulticastReq((bot, subscriber) => {
       const spot = getSpotFromCommand(subscriber.spot);
 
-      Screenshot.getScreenshot(spot.url, spot.filename, savePath).then(
+      Screenshot.getScreenshot(spot.url, spot.filename, savePath).then( //// TODO: move this up
         (path) => {
           bot.sendPhoto(subscriber.chatId, {
             source: fs.readFileSync(path)
@@ -178,7 +179,7 @@ module.exports = function() {
           }).catch((error) => {
             logError(error.code);
             logError(error.response.description);
-          }).then((ctx) => {
+          }).then((ctx) => { // finaly
             logger.debug('done');
           });
         }).catch((err) => {
@@ -225,6 +226,8 @@ module.exports = function() {
       bot.options.username = me.username;
       botUsername = me.username;
       logger.info("bot name: " + me.username);
+    }).catch((error) => {
+      logError('#error getMe: ' + error);
     });
 
     startSubscriberForcastMulticastJob();

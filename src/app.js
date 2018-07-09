@@ -23,6 +23,8 @@ const configLogs = function() {
 }();
 
 const Telegraf = require('telegraf');
+const telegramLogger = require('./errorHandler/telegramLogger');
+const errorHandlerMiddleware = require('./errorHandler/errorHandlerMiddleware');
 const forcastbot = require('./forcastbot');
 const localtunnel = require('localtunnel');
 const logger = log4js.getLogger("app");
@@ -72,7 +74,7 @@ function setupFastisyServer(telegramBot) {
 
 logger.info("connecting telegram api");
 const bot = new Telegraf(config.get('telegramBot.token'));
-
+bot.use(errorHandlerMiddleware());
 forcastbot.setupForcastBot(bot);
 
 if (config.get('telegramBot.tunnel')){
@@ -87,9 +89,14 @@ if (config.get('telegramBot.tunnel')){
   bot.telegram.deleteWebhook().then((success) => {
     if (success) {
       logger.debug("start bot on polling mode");
-      bot.startPolling();
+      bot.startPolling().catch((err) => {
+        const errorDesc = "error polling " + err;
+        telegramLogger.extLogErr(logger, err, errorDesc);
+      });
     } else {
       logger.error("error clearing old webhook");
     }
+  }).catch(() => {
+    logger.error("error clearing old webhook2");
   });
 }
