@@ -5,7 +5,7 @@
   "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",
-    "start:dev": "cross-env NODE_ENV=development node src/app.js",
+    "start:dev": "cross-env NODE_ENV=development nodemon src/app.js",
     "start:prod": "cross-env NODE_ENV=production node src/app.js",
     "clean": "rimraf package-lock.json ./node_modules/ ./lib/*",
     "clean:compile": "rimraf ./lib/*",
@@ -30,14 +30,15 @@
     "localtunnel": "1.9.0",
     "log4js": "2.5.3",
     "moment": "2.22.1",
-    "pageres": "4.5.1",
-    "telegraf": "3.20.0",
     "nedb": "1.8.0",
-    "node-cron": "1.2.1"
+    "node-cron": "1.2.1",
+    "sharp": "0.21.0",
+    "telegraf": "3.20.0",
+    "url-to-image": "^1.0.0"
   },
   "devDependencies": {
     "cross-env": "latest",
-    "now": "^11.1.7",
-    "rimraf": "latest"
+    "rimraf": "latest",
+    "nodemon": "latest"
   }
 }

@@ -158,14 +158,16 @@ module.exports = function() {
 
   function handleSubscriberMulticastReq(ctx) {
     executeMulticastReq((bot, subscriber) => {
-      bot.sendMessage(subscriber.chatId, "test").catch((err) => {
+      let text = ctx.message.text.replace(subscriberMulticastCmd,'');
+      text = text.replace('/ ','');
+      bot.sendMessage(subscriber.chatId, text).catch((err) => {
         logError(ctx, 'Error sending podcast: ' + err);
       });
     });
   }
 
   function subscriberForcastMulticast() {
-    //// TODO:  to here
+    //// TODO:  to here.
     executeMulticastReq((bot, subscriber) => {
       const spot = getSpotFromCommand(subscriber.spot);
 
@@ -197,8 +199,9 @@ module.exports = function() {
     const authUser = function(ctx, func) {
       let user = {
         username: ctx.message.from.username
-      };
-      if (user.username !== managerUsername) {
+      // }//// TODO:
+    };
+      if (user.username !== config.get('telegramBot.managerUsername')) {
         logger.warn("Unauthorize: " + user.username);
         ctx.reply("Unauthorize");
       } else {

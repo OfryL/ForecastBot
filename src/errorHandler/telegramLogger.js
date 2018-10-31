@@ -18,13 +18,17 @@ module.exports = function() {
 
   function extLogErr(localLogger, err, errorDesc) {
     let stack = "";
-    if (err.stack){
-      stack = err.stack.toString();
+    try {
+      if (err && err.stack) {
+        stack = err.stack.toString();
+      }
+    } catch(exp) {
+      log('error gettig stack: ', exp);
     }
     const newErrorDesc = errorDesc + '\n' + stack;
 
     localLogger.error(newErrorDesc);
-    return logErr(newErrorDesc);
+    return log('extError', newErrorDesc);
   }
 
   function logErr(err) {
@@ -54,15 +58,19 @@ module.exports = function() {
       }
     };
 
-    var req = http.request(options, function(res) {
-      res.setEncoding('utf8');
-      // res.on('data', function(chunk) {
-      //   // logger.debug("body: " + chunk);
-      // });
-    });
+    try {
+      let req = http.request(options, function(res) {
+        res.setEncoding('utf8'); //// TODO: Catch here
+        // res.on('data', function(chunk) {
+        //   // logger.debug("body: " + chunk);
+        // });
+      });
 
-    req.write(data);
-    req.end();
+      req.write(data);
+      req.end();
+    } catch(err) {
+      logger.error('telegram log failed' + err);
+    }
   }
 
   return {

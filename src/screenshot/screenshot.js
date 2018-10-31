@@ -1,12 +1,17 @@
 const moment = require('moment');
 const config = require('config');
-const Pageres = require('pageres');
+const urlToImage = require('url-to-image');
+const sharp = require('sharp');
 const fs = require('fs');
 const util = require('util');
 
 const log4js = require('log4js');
 
 const logger = log4js.getLogger("screenshot");
+
+const screenshotWidth = 360;
+const screenshotHeight = 420;
+const screenshotStartPos = 760;
 
 module.exports = function() {
   'use strict';
@@ -38,17 +43,25 @@ module.exports = function() {
 
   function getScreenshotFromWebPage(resolve, reject) {
     logger.debug("getting screenshot started");
-    let pageres = new Pageres()
-      .src(props.url, ['400X480'], props.options)
-      .dest(props.workingDir)
-      .run()
-      .then(() => {
-        logger.debug('screenshot saved to ' + props.fullFilePathNameExt);
-        resolve(props.fullFilePathNameExt);
-      }, (err) => {
-        logger.error(err);
+    let tempFullFilePathNameExt = props.fullFilePathNameExt + '.full.png';
+    urlToImage(props.url, tempFullFilePathNameExt, {width: screenshotWidth, height: screenshotHeight, verbose: false})
+    .then(function() {
+      logger.debug("getting screenshot done and saved to ${props.fullFilePathNameExt}");
+
+      sharp(tempFullFilePathNameExt)
+        .extract({left: 0, top: screenshotStartPos, width: screenshotWidth, height: screenshotHeight })
+        .toFile(props.fullFilePathNameExt, function(err) {
+          if (err) {
+            logger.error('error croping screenshot: ' + err);
+            reject(err);
+          } else {
+            resolve(props.fullFilePathNameExt);
+          }
+        });
+    }).catch(function(err) {
+        logger.error('error getting screenshot from site: ' + err);
         reject(err);
-      });
+    });
   }
 
   function getScreenshot(url, fileName, workingDir) {

@@ -1,0 +1,17 @@
+{
+    "env": {
+        "es6": true,
+        "jquery": true,
+        "commonjs": true
+    },
+    "extends": "eslint:recommended",
+    "parserOptions": {
+        "ecmaVersion": 6
+    },
+    "rules": {
+        "semi": [
+            "error",
+            "always"
+        ]
+    }
+}
