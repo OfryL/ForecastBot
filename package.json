@@ -32,9 +32,8 @@
     "moment": "2.22.1",
     "nedb": "1.8.0",
     "node-cron": "1.2.1",
-    "sharp": "0.21.0",
+    "phantom": "6.0.3",
     "telegraf": "3.20.0",
-    "url-to-image": "^1.0.0"
   },
   "devDependencies": {
     "cross-env": "latest",

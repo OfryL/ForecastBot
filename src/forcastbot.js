@@ -157,13 +157,17 @@ module.exports = function() {
   }
 
   function handleSubscriberMulticastReq(ctx) {
-    executeMulticastReq((bot, subscriber) => {
-      let text = ctx.message.text.replace(subscriberMulticastCmd,'');
-      text = text.replace('/ ','');
-      bot.sendMessage(subscriber.chatId, text).catch((err) => {
-        logError(ctx, 'Error sending podcast: ' + err);
+    let text = ctx.message.text.replace('/' + subscriberMulticastCmd,'');
+    text = text.replace('/ ','');
+    if (!text) {
+      ctx.reply('Cant send blank msg!');
+    } else {
+      executeMulticastReq((bot, subscriber) => {
+        bot.sendMessage(subscriber.chatId, text).catch((err) => {
+          logError(ctx, 'Error sending podcast to: ' + JSON.stringify(subscriber) + ' \n' + err);
+        });
       });
-    });
+    }
   }
 
   function subscriberForcastMulticast() {
@@ -185,7 +189,7 @@ module.exports = function() {
             logger.debug('done');
           });
         }).catch((err) => {
-        logError('error while getting the screenshot: ' + err);
+        logError('subscriberForcastMulticast - error: ' + err);
       });
     });
   }
@@ -199,8 +203,7 @@ module.exports = function() {
     const authUser = function(ctx, func) {
       let user = {
         username: ctx.message.from.username
-      // }//// TODO:
-    };
+      };
       if (user.username !== config.get('telegramBot.managerUsername')) {
         logger.warn("Unauthorize: " + user.username);
         ctx.reply("Unauthorize");

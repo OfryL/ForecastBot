@@ -1,7 +1,6 @@
 const moment = require('moment');
 const config = require('config');
-const urlToImage = require('url-to-image');
-const sharp = require('sharp');
+const phantom = require('phantom');
 const fs = require('fs');
 const util = require('util');
 
@@ -17,7 +16,18 @@ module.exports = function() {
   'use strict';
 
   const props = {};
-  const selectorValue = 'body > div.cover > div.cover-inner > div.pages.clear-left.clear-right > div > div.msw-fc.msw-js-forecast > div:nth-child(2) > div:nth-child(2) > div > div > div.msw-col-fluid > div > div:nth-child(2) > div > div';
+
+  const getElementFromDom = function() {
+      var forcastDiv = document.querySelector('.msw-fc-current');
+      forcastDiv.innerHTML = '<header class="clearfix"><h3 class="forecast-sub-title forecast-sub-title-fluidfixed nomargin-top"><div class="forecast-sub-title-fluid"><span class="visible-xs heavy">Current Conditions</span></div></h3></header>' 
+          + forcastDiv.innerHTML;
+      var parentNode = forcastDiv.parentNode;
+      crditDiv = parentNode.querySelector('.msw-tide-vertical .nomargin-bottom');
+      crditDiv.innerHTML = crditDiv.innerHTML
+        + '<p class="nomargin-bottom"><small><strong>brought by @IsraelSurfBot</strong></small> Source: ' + document.URL.replace('https:\/\/','') + '</p>';
+      return parentNode.getBoundingClientRect();
+  };
+
 
   function checkIfFileExist() {
     return new Promise(function(resolve, reject) {
@@ -41,27 +51,35 @@ module.exports = function() {
     });
   }
 
-  function getScreenshotFromWebPage(resolve, reject) {
+  async function getScreenshotFromWebPage(resolve, reject) {
     logger.debug("getting screenshot started");
-    let tempFullFilePathNameExt = props.fullFilePathNameExt + '.full.png';
-    urlToImage(props.url, tempFullFilePathNameExt, {width: screenshotWidth, height: screenshotHeight, verbose: false})
-    .then(function() {
-      logger.debug("getting screenshot done and saved to ${props.fullFilePathNameExt}");
+    const start = new Date();
+    const instance = await phantom.create();
+    const page = await instance.createPage();
 
-      sharp(tempFullFilePathNameExt)
-        .extract({left: 0, top: screenshotStartPos, width: screenshotWidth, height: screenshotHeight })
-        .toFile(props.fullFilePathNameExt, function(err) {
-          if (err) {
-            logger.error('error croping screenshot: ' + err);
-            reject(err);
-          } else {
-            resolve(props.fullFilePathNameExt);
-          }
-        });
-    }).catch(function(err) {
-        logger.error('error getting screenshot from site: ' + err);
-        reject(err);
+    const status = await page.open(props.url);
+
+    const title = await page.property('title');
+    logger.debug("phantomjs - page opened (" + status + "): " + title);
+
+    await page.property('viewportSize', { width: screenshotWidth, height: screenshotHeight });
+    const clipRect = await page.evaluate(getElementFromDom);
+    await page.property('clipRect', {
+      top:    clipRect.top,
+      left:   clipRect.left,
+      width:  clipRect.width,
+      height: clipRect.height
     });
+
+    logger.debug("phantomjs - start page render");
+    await page.render(props.fullFilePathNameExt);
+
+    await instance.exit();
+
+    const end = new Date() - start;
+    logger.debug("phantomjs - took %dms", end);
+
+    resolve(props.fullFilePathNameExt)
   }
 
   function getScreenshot(url, fileName, workingDir) {
@@ -72,7 +90,6 @@ module.exports = function() {
       crop: true,
       filename: fileName,
       delay: 0,
-      selector: selectorValue,
       userAgent: config.get('Screenshots.userAgent'),
       script: __dirname + "/runOnSite.js"
     };

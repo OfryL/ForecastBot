@@ -25,7 +25,7 @@ module.exports = function() {
     } catch(exp) {
       log('error gettig stack: ', exp);
     }
-    const newErrorDesc = errorDesc + '\n' + stack;
+    const newErrorDesc = errorDesc + '\n' + err + '\n' + stack;
 
     localLogger.error(newErrorDesc);
     return log('extError', newErrorDesc);
