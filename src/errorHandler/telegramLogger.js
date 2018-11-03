@@ -16,7 +16,7 @@ module.exports = function() {
     return log('warn', msg);
   }
 
-  function extLogErr(localLogger, err, errorDesc) {
+  function extLogErr(err, errorDesc) {
     let stack = "";
     try {
       if (err && err.stack) {
@@ -27,7 +27,6 @@ module.exports = function() {
     }
     const newErrorDesc = errorDesc + '\n' + err + '\n' + stack;
 
-    localLogger.error(newErrorDesc);
     return log('extError', newErrorDesc);
   }
 

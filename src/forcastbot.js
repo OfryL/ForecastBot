@@ -48,8 +48,9 @@ module.exports = function() {
   var _bot;
   var botUsername;
 
-  function logError(ctx, err) {
-    telegramLogger.extLogErr(logger, err, null);
+  function logError(err, desc = null) {
+    logger.error(err);
+    telegramLogger.extLogErr(err, desc);
   }
 
   function getSpotFromCommand(text) {
@@ -66,7 +67,11 @@ module.exports = function() {
   function executeMulticastReq(func) {
     subscribeDao.getAllSubscribers().then((subscribers) => {
       subscribers.forEach((s) => {
-        func(_bot.telegram, s);
+        try {
+          func(_bot.telegram, s);
+        } catch (e) {
+          logError(e, '#error executeMulticastReq');
+        }
       });
     }).catch((error) => {
       logError(ctx, '#error executeMulticastReq: ' + error);
@@ -170,28 +175,39 @@ module.exports = function() {
     }
   }
 
-  function subscriberForcastMulticast() {
-    //// TODO:  to here.
-    executeMulticastReq((bot, subscriber) => {
-      const spot = getSpotFromCommand(subscriber.spot);
+  async function subscriberForcastMulticast() {
+    const spotsToPath = {};
 
-      Screenshot.getScreenshot(spot.url, spot.filename, savePath).then( //// TODO: move this up
-        (path) => {
-          bot.sendPhoto(subscriber.chatId, {
-            source: fs.readFileSync(path)
-          }, {
-            caption: 'Wave forcast notification for ' + spot.name + '\n<a href="' + spot.url + '">More Info</a>',
-            parse_mode: 'HTML'
-          }).catch((error) => {
-            logError(error.code);
-            logError(error.response.description);
-          }).then((ctx) => { // finaly
-            logger.debug('done');
-          });
-        }).catch((err) => {
-        logError('subscriberForcastMulticast - error: ' + err);
-      });
-    });
+    const msgHandler = async function(bot, subscriber) {
+      const spot = getSpotFromCommand(subscriber.spot);
+      const pathToImage = savePath + "\\" + spot.filename + '.png';
+      if(spotsToPath[subscriber.spot]) {
+        pathToImage = spotsToPath[subscriber.spot];
+      } else {
+        try {
+          await Screenshot.getScreenshot(spot.url, spot.filename, savePath);
+        }
+        catch(err) {
+          logError('subscriberForcastMulticast - error: ' + err);
+        }
+        spotsToPath[subscriber.spot] = pathToImage;
+      }
+
+      try {
+        logger.debug("pathToImage: "+pathToImage);
+        await bot.sendPhoto(subscriber.chatId, {
+          source: fs.readFileSync(pathToImage)
+        }, {
+          caption: 'Wave forcast notification for ' + spot.name + '\n<a href="' + spot.url + '">More Info</a>',
+          parse_mode: 'HTML'
+        });
+      } catch(error) {
+        logError(e ,"error sendPhoto to subscriber: " + JSON.stringify(subscriber) + " on spot :" + JSON.stringify(spot));
+      }
+      logger.debug('done');
+    }
+
+    executeMulticastReq(msgHandler);
   }
 
   function startSubscriberForcastMulticastJob() {

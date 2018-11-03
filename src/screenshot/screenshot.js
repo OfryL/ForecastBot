@@ -51,7 +51,7 @@ module.exports = function() {
     });
   }
 
-  async function getScreenshotFromWebPage(resolve, reject) {
+  async function getScreenshotFromWebPage() {
     logger.debug("getting screenshot started");
     const start = new Date();
     const instance = await phantom.create();
@@ -79,10 +79,10 @@ module.exports = function() {
     const end = new Date() - start;
     logger.debug("phantomjs - took %dms", end);
 
-    resolve(props.fullFilePathNameExt)
+    return props.fullFilePathNameExt;
   }
 
-  function getScreenshot(url, fileName, workingDir) {
+  async function getScreenshot(url, fileName, workingDir) {
     props.url = url;
     props.fileName = fileName;
     props.workingDir = workingDir;
@@ -96,18 +96,14 @@ module.exports = function() {
 
     props.fullFilePathNameExt = workingDir + '/' + fileName + '.png';
 
-    return new Promise(function(resolve, reject) {
-      checkIfFileExist().then((isExist) => {
-        if (isExist) {
-          logger.debug("screenshot exist");
-          resolve(props.fullFilePathNameExt);
-        } else {
-          getScreenshotFromWebPage(resolve, reject);
-        }
-      });
-    });
+    let isExist = await checkIfFileExist();
+    if (isExist) {
+      logger.debug("screenshot exist");
+    } else {
+      await getScreenshotFromWebPage();
+    }
+    return props.fullFilePathNameExt;
   }
-
 
   return {
     getScreenshot
