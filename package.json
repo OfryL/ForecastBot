@@ -4,7 +4,7 @@
   "description": "a telegram bot for wave forcasting of the israeli coast",
   "main": "src/app.js",
   "scripts": {
-    "start": "node src/app.js",
+    "start": "NODE_ENV=production node src/app.js",
     "start:dev": "cross-env NODE_ENV=development nodemon src/app.js",
     "start:prod": "cross-env NODE_ENV=production node src/app.js",
     "clean": "rimraf package-lock.json ./node_modules/ ./lib/*",
@@ -33,7 +33,7 @@
     "nedb": "1.8.0",
     "node-cron": "1.2.1",
     "phantom": "6.0.3",
-    "telegraf": "3.20.0",
+    "telegraf": "3.20.0"
   },
   "devDependencies": {
     "cross-env": "latest",

@@ -24,7 +24,7 @@ module.exports = function() {
       var parentNode = forcastDiv.parentNode;
       crditDiv = parentNode.querySelector('.msw-tide-vertical .nomargin-bottom');
       crditDiv.innerHTML = crditDiv.innerHTML
-        + '<p class="nomargin-bottom"><small><strong>brought by @IsraelSurfBot</strong></small> Source: ' + document.URL.replace('https:\/\/','') + '</p>';
+        + '<p class="nomargin-bottom"><small><strong>brought by @IsraelSurfBot</strong> Source: ' + document.URL.replace('https:\/\/','') + '</small></p>';
       return parentNode.getBoundingClientRect();
   };
 

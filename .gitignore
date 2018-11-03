@@ -1,4 +1,5 @@
-src/forcast.png
+config/default.json
+config/production.json
 
 lib/
 
