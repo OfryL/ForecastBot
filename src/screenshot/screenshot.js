@@ -29,32 +29,31 @@ module.exports = function() {
   };
 
 
-  function checkIfFileExist() {
-    return new Promise(function(resolve, reject) {
-
-      if (!fs.existsSync(props.fullFilePathNameExt)) {
-        resolve(false);
+  async function checkIfFileExist() {
+      if (!fs.existsSync(props.forcastFilePathNameExt)) {
+        return false; //isExist = false
       }
 
-      const stats = fs.statSync(props.fullFilePathNameExt);
+      const stats = fs.statSync(props.forcastFilePathNameExt);
 
       const startDate = moment(new Date(util.inspect(stats.mtime)), 'YYYY-M-DD HH:mm:ss');
       const endDate = moment(new Date(), 'YYYY-M-DD HH:mm:ss');
 
       if (endDate.diff(startDate, 'days') === 0 && endDate.diff(startDate, 'hours') === 0){
-        //isExist true
-        resolve(true);
+        return true; //isExist = true
       } else {
-        //isExist false
-        resolve(false);
+        return false; //isExist = false - file is too old
       }
-    });
   }
 
   async function getScreenshotFromWebPage() {
     logger.debug("getting screenshot started");
+    const phantomLogger = log4js.getLogger("screenshot-phantom");
+    phantomLogger.level = 'warn';
     const start = new Date();
-    const instance = await phantom.create();
+    const instance = await phantom.create([], {
+      logger: phantomLogger,
+    });
     const page = await instance.createPage();
 
     const status = await page.open(props.url);
@@ -62,6 +61,8 @@ module.exports = function() {
     const title = await page.property('title');
     logger.debug("phantomjs - page opened (" + status + "): " + title);
 
+    logger.debug(`phantomjs - render to ${props.fullForcastFilePathNameExt}`);
+    await page.render(props.fullForcastFilePathNameExt);
     await page.property('viewportSize', { width: screenshotWidth, height: screenshotHeight });
     const clipRect = await page.evaluate(getElementFromDom);
     await page.property('clipRect', {
@@ -71,15 +72,15 @@ module.exports = function() {
       height: clipRect.height
     });
 
-    logger.debug("phantomjs - start page render");
-    await page.render(props.fullFilePathNameExt);
+    logger.debug(`phantomjs - render to ${props.forcastFilePathNameExt}`);
+    await page.render(props.forcastFilePathNameExt);
 
     await instance.exit();
 
     const end = new Date() - start;
     logger.debug("phantomjs - took %dms", end);
 
-    return props.fullFilePathNameExt;
+    return props.forcastFilePathNameExt;
   }
 
   async function getScreenshot(url, fileName, workingDir) {
@@ -94,7 +95,8 @@ module.exports = function() {
       script: __dirname + "/runOnSite.js"
     };
 
-    props.fullFilePathNameExt = workingDir + '/' + fileName + '.png';
+    props.forcastFilePathNameExt = workingDir + '/' + fileName + '.png';
+    props.fullForcastFilePathNameExt = workingDir + '/' + fileName + '.full.png';
 
     let isExist = await checkIfFileExist();
     if (isExist) {
@@ -102,7 +104,7 @@ module.exports = function() {
     } else {
       await getScreenshotFromWebPage();
     }
-    return props.fullFilePathNameExt;
+    return props.forcastFilePathNameExt;
   }
 
   return {

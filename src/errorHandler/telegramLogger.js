@@ -1,4 +1,4 @@
-var http = require('https');
+const http = require('https');
 const logger = require('log4js').getLogger("telegramLogger");
 const config = require('config');
 
@@ -8,12 +8,20 @@ const loggerChatId = config.get('telegramBot.loggerChatId');
 module.exports = function() {
   'use strict';
 
+
+  function logInfoProd(msg) {
+    if (process.env.NODE_ENV !== 'production') {
+      return;
+    }
+    return logInfo('#info #prod', msg);
+  }
+
   function logInfo(msg) {
-    return log('info', msg);
+    return log('#info', msg);
   }
 
   function logWarn(msg) {
-    return log('warn', msg);
+    return log('#warn', `<b>Warning:</b>\n${msg}`);
   }
 
   function extLogErr(err, errorDesc) {
@@ -25,23 +33,24 @@ module.exports = function() {
     } catch(exp) {
       log('error gettig stack: ', exp);
     }
-    const newErrorDesc = errorDesc + '\n' + err + '\n' + stack;
+    const newErrorDesc = `<i>${errorDesc}</i>\n${err}\n<code>${stack}<code>`;
 
-    return log('extError', newErrorDesc);
+    return log('#extError #error', `<b>An Error Has Occurred:</b>\n${newErrorDesc}`);
   }
 
   function logErr(err) {
     let msg = err;
     if (err && err.stack) {
-      msg += "\ntrace:\n" + err.stack;
+      msg += `\ntrace:\n${err.stack}`;
     }
-    return log('error', msg);
+    return log('#error', `<b>An Error Has Occurred:</b>\n${msg}`);
   }
 
   function log(lvl, msg) {
     const data = JSON.stringify({
       chat_id: loggerChatId,
-      text: lvl + ' : ' + msg
+      text: `${msg}\n${lvl}`,
+      parse_mode: 'HTML'
     });
 
     // host: '149.154.167.40',
@@ -73,6 +82,7 @@ module.exports = function() {
   }
 
   return {
+    logInfoProd,
     logInfo,
     logWarn,
     logErr,

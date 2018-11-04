@@ -14,8 +14,8 @@ const subscribeCmd = 'subscribe';
 const subscriberListCmd = 'subscriberList';
 const subscriberMulticastCmd = 'postToSubscribers';
 
-const savePath = process.cwd() + '/lib/screenshots';
-// const savePath = __dirname;
+const saveDirPath = process.cwd() + '/lib/screenshots';
+// const saveDirPath = __dirname;
 
 const urls = {
   'TelAviv': {
@@ -64,101 +64,101 @@ module.exports = function() {
     return urls.TelAviv;
   }
 
-  function executeMulticastReq(func) {
-    subscribeDao.getAllSubscribers().then((subscribers) => {
-      subscribers.forEach((s) => {
-        try {
-          func(_bot.telegram, s);
-        } catch (e) {
-          logError(e, '#error executeMulticastReq');
-        }
-      });
-    }).catch((error) => {
-      logError(ctx, '#error executeMulticastReq: ' + error);
-    });
+  async function showUploadPhotoStatus(ctx) {
+    var replyWithChatAction = ctx.replyWithChatAction;
+    await replyWithChatAction("upload_photo");
+
+    const intervalObj = setInterval(() => {
+      if (replyWithChatAction) {
+        replyWithChatAction("upload_photo");
+      }
+    }, 3000);
+
+    const stop = () => {
+        logger.debug('clearing upload_photo replyWithChatAction...');
+        clearInterval(intervalObj);
+        delete replyWithChatAction;
+        delete isDone;
+    };
+    return stop;
+  }
+
+  async function executeMulticastReq(func) {
+    try {
+      const subscribers = await subscribeDao.getAllSubscribers();
+      for (let index = 0; index < subscribers.length; index++) {
+        let s = subscribers[index];
+        await func(_bot.telegram, s);
+      }
+    } catch(error) {
+      logError(error, 'executeMulticastReq');
+    }
   }
 
   function handleStartCmd(ctx) {
-    telegramLogger.logInfo("Someone /start me");
+    telegramLogger.logInfo(`Start from user: ${ctx.message.from.first_name}(@${ctx.message.from.username})`);
     ctx.telegram.sendMessage(ctx.message.chat.id, START_MSG, {parse_mode:'HTML'} );
   }
 
-  function handleForcastReq(ctx) {
+  async function handleForcastReq(ctx) {
     logger.info("processing request (ChatID: " + ctx.message.chat.id + ")");
 
     const spot = getSpotFromCommand(ctx.message.text);
 
-    var isDone = false;
-    var replyWithChatAction = ctx.replyWithChatAction;
-    replyWithChatAction("upload_photo");
-    const intervalObj = setInterval(() => {
-      if (isDone) {
-        clearInterval(this);
-        replyWithChatAction = null;
-        isDone = null;
-      } else {
-        if (replyWithChatAction) {
-          replyWithChatAction("upload_photo");
-        }
-      }
-    }, 3000);
+    const stopShowUploadPhotoStatus = await showUploadPhotoStatus(ctx);
 
-    Screenshot.getScreenshot(spot.url, spot.filename, savePath).then(
-      (path) => {
-        ctx.replyWithPhoto({
-          source: fs.readFileSync(path)
-        }, {
+    let path = ''
+    try {
+      path = await Screenshot.getScreenshot(spot.url, spot.filename, saveDirPath);
+    } catch (error) {
+        logError(error, 'error while getting the screenshot');
+    }
+
+    try {
+      ctx.replyWithPhoto({ source: fs.readFileSync(path) }, {
           caption: 'Wave forcast notification for ' + spot.name + '\n<a href="' + spot.url + '">More Info</a>\n@' + botUsername + ' to subscribe me!',
           parse_mode: 'HTML'
-        }).catch((error) => {
-          logError(ctx, error.code);
-          logError(ctx, error.response.description); // => { ok: false, error_code: 400, description: 'Bad Request: chat not found' }
-        }).then((ctx) => {
-          logger.debug('done');
         });
-      },
-      (err) => {
-        logError(ctx, 'error while getting the screenshot: ' + err);
-      }).catch((error) => {
-      logError(ctx, 'error while getting the screenshot2: ' + error);
-    }).then(() => { //finaly
-      isDone = true;
-      clearInterval(intervalObj);
-    });
+    } catch (error) {
+      logError(error, `while sending forcast msg (#${error.code})\n${error.response.description}`);  // => { ok: false, error_code: 400, description: 'Bad Request: chat not found' }
+    }
+    stopShowUploadPhotoStatus();
+    logger.debug('done');
   }
 
-  function handleSubscribeReq(ctx) {
-    let chatId = ctx.message.chat.id;
-    subscribeDao.getSubscriber(chatId).then((subscriber) => {
-      if (subscriber.length) {
-        subscribeDao.removeSubscriber(chatId).then(() => {
-          ctx.reply('You are now un-register :( ');
-          telegramLogger.logInfo("Someone left us :(");
-        }).catch((err) => {
-          ctx.reply('Failed to un-register!');
-          logError(err);
-        });
-      } else {
-        subscribeDao.addSubscriber(chatId, 'TelAviv').then(() => {
-          ctx.reply('You are now register to forcast updates!');
-          telegramLogger.logInfo("Someone join us :)");
-        }).catch((err) => {
-          ctx.reply('Failed to register!');
-          logError(err);
-        });
+  async function handleSubscribeReq(ctx) {
+    const chatId = ctx.message.chat.id;
+    const userDesc = `${ctx.message.from.first_name}(@${ctx.message.from.username})`;
+    const subscriber = await subscribeDao.getSubscriber(chatId);
+    if (subscriber.length) {
+      try {
+        await subscribeDao.removeSubscriber(chatId);
+        ctx.reply('You are now un-register :( ');
+        telegramLogger.logInfo(`${userDesc} #unregister`);
+      } catch (e) {
+        ctx.reply('Failed to un-register!');
+        logError(e, `Failed to #unregister ${userDesc}`);
       }
-    }).catch((err) => {
-      ctx.reply('Failed!');
-    });
+    } else {
+      try {
+        await subscribeDao.addSubscriber(chatId, 'TelAviv');
+        ctx.reply('You are now register to forcast updates!');
+        telegramLogger.logInfo(`${userDesc} #register`);
+      } catch (e) {
+        ctx.reply('Failed to register!');
+        logError(e, `Failed to #register ${userDesc}`);
+      }
+    }
   }
 
-  function handleSubscribeListReq(ctx) {
-    subscribeDao.getAllSubscribers().then((subscribers) => {
+  async function handleSubscribeListReq(ctx) {
+    try {
+      const subscribers = await subscribeDao.getAllSubscribers();
       let chatIds = subscribers.map((s) => s.chatId);
       ctx.reply('subscribers: ' + chatIds);
-    }).catch((error) => {
-      logError(ctx, '#error handleSubscribeListReq: ' + error);
-    });
+    } catch(error) {
+      logError(error, 'handleSubscribeListReq');
+    }
   }
 
   function handleSubscriberMulticastReq(ctx) {
@@ -169,7 +169,7 @@ module.exports = function() {
     } else {
       executeMulticastReq((bot, subscriber) => {
         bot.sendMessage(subscriber.chatId, text).catch((err) => {
-          logError(ctx, 'Error sending podcast to: ' + JSON.stringify(subscriber) + ' \n' + err);
+          logError(err, 'Error sending podcast to: ' + JSON.stringify(subscriber));
         });
       });
     }
@@ -180,12 +180,10 @@ module.exports = function() {
 
     const msgHandler = async function(bot, subscriber) {
       const spot = getSpotFromCommand(subscriber.spot);
-      const pathToImage = savePath + "\\" + spot.filename + '.png';
-      if(spotsToPath[subscriber.spot]) {
-        pathToImage = spotsToPath[subscriber.spot];
-      } else {
+      const pathToImage = saveDirPath + "\\" + spot.filename + '.png';
+      if(!spotsToPath[subscriber.spot]) {
         try {
-          await Screenshot.getScreenshot(spot.url, spot.filename, savePath);
+          await Screenshot.getScreenshot(spot.url, spot.filename, saveDirPath);
         }
         catch(err) {
           logError('subscriberForcastMulticast - error: ' + err);
@@ -207,7 +205,7 @@ module.exports = function() {
       logger.debug('done');
     }
 
-    executeMulticastReq(msgHandler);
+    await executeMulticastReq(msgHandler);
   }
 
   function startSubscriberForcastMulticastJob() {
@@ -222,6 +220,7 @@ module.exports = function() {
       };
       if (user.username !== config.get('telegramBot.managerUsername')) {
         logger.warn("Unauthorize: " + user.username);
+        telegramLogger.logWarn("Unauthorize: " + user.username);
         ctx.reply("Unauthorize");
       } else {
         func(ctx);
@@ -248,6 +247,7 @@ module.exports = function() {
       bot.options.username = me.username;
       botUsername = me.username;
       logger.info("bot name: " + me.username);
+      telegramLogger.logInfoProd(`Bot has started`);
     }).catch((error) => {
       logError('#error getMe: ' + error);
     });
