@@ -101,7 +101,7 @@ module.exports = function() {
   }
 
   async function handleForcastReq(ctx) {
-    logger.info("processing request (ChatID: " + ctx.message.chat.id + ")");
+    logger.info(`processing request from ${ctx.message.from.first_name}(@${ctx.message.from.username})`);
 
     const spot = getSpotFromCommand(ctx.message.text);
 
@@ -200,7 +200,7 @@ module.exports = function() {
           parse_mode: 'HTML'
         });
       } catch(error) {
-        logError(e ,"error sendPhoto to subscriber: " + JSON.stringify(subscriber) + " on spot :" + JSON.stringify(spot));
+        logError(error ,"error sendPhoto to subscriber: " + JSON.stringify(subscriber) + " on spot :" + JSON.stringify(spot));
       }
       logger.debug('done');
     }

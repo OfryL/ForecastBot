@@ -13,7 +13,7 @@ module.exports = function() {
     if (process.env.NODE_ENV !== 'production') {
       return;
     }
-    return logInfo('#info #prod', msg);
+    return log('#info #prod', msg);
   }
 
   function logInfo(msg) {
