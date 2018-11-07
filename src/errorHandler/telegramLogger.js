@@ -59,9 +59,30 @@ module.exports = function() {
   }
 
   function log(lvl, msg) {
+    const msgText = `${msg}\n${lvl}`;
+    try {
+      logger.debug(`Sending logs to remote chatId#${loggerChatId}`);
+      sendMessageViaHttpReq(msgText, function(response) {
+        response.setEncoding('utf8');
+        if (!util.isNullOrUndefined(response.statusCode) && response.statusCode !== 200){
+          try {
+            sendMessageViaHttpReq(`<b>An Error Has Occurred During sending telegram logs, read server log for more info</b>`, function(response) {});
+          } catch (e) { } //do not log it.
+          logger.error(`Error while sending http req, got error ${response.statusCode}: ${response.statusMessage}\nData was:\nInnerData was:\n${msgText}`);
+          response.on('data', function (chunk) {
+            logger.error('RESPONSE BODY: ' + chunk);
+          });
+        }
+      });
+    } catch(err) {
+      logger.error('telegram log http req failed\n' + err);
+    }
+  }
+
+  function sendMessageViaHttpReq (msgText, responseHandler) {
     const data = JSON.stringify({
       chat_id: loggerChatId,
-      text: `${msg}\n${lvl}`,
+      text: msgText,
       parse_mode: 'HTML'
     });
 
@@ -76,23 +97,9 @@ module.exports = function() {
         'Content-Length': Buffer.byteLength(data)
       }
     };
-
-    try {
-      logger.debug(`Sending logs to remote chatId#${loggerChatId}`);
-      let req = http.request(options, function(response) {
-        response.setEncoding('utf8');
-        if (!util.isNullOrUndefined(response.statusCode) && response.statusCode !== 200){
-          logger.error(`Error while sending http req, got error ${response.statusCode}: ${response.statusMessage}\nData was:\n${JSON.stringify(options)}\n$InnerData was:\n{data}`);
-          response.on('data', function (chunk) {
-            logger.error('RESPONSE BODY: ' + chunk);
-          });
-        }
-      });
+      let req = http.request(options, responseHandler);
       req.write(data);
       req.end();
-    } catch(err) {
-      logger.error('telegram log http req failed\n' + err);
-    }
   }
 
   return {
