@@ -1,3 +1,4 @@
+const util = require('util');
 const path = require('path');
 const config = require('config');
 const Screenshot = require('./screenshot/screenshot');
@@ -116,12 +117,14 @@ module.exports = function() {
     }
 
     try {
-      ctx.replyWithPhoto({ source: fs.readFileSync(path) }, {
+      const fileContent = await fs.readFileSync(path);
+      ctx.replyWithPhoto({ source: fileContent }, {
           caption: 'Wave forcast notification for ' + spot.name + '\n<a href="' + spot.url + '">More Info</a>\n@' + botUsername + ' to subscribe me!',
           parse_mode: 'HTML'
         });
     } catch (error) {
-      logError(error, `while sending forcast msg (#${error.code})\n${error.response.description}`);  // => { ok: false, error_code: 400, description: 'Bad Request: chat not found' }
+      const description = !util.isNullOrUndefined(error.response) ? error.response.description : ''
+      logError(error, `while sending forcast msg (#${error.code})\n${description}`);  // => { ok: false, error_code: 400, description: 'Bad Request: chat not found' }
     }
     stopShowUploadPhotoStatus();
     logger.debug('done');
@@ -143,7 +146,7 @@ module.exports = function() {
     } else {
       try {
         await subscribeDao.addSubscriber(chatId, 'TelAviv');
-        ctx.reply('You are now register to forcast updates!');
+        ctx.reply(`You are now register to forcast updates!\nTo un-register sent /${subscribeCmd} again any time.`);
         telegramLogger.logInfo(`${userDesc} #register`);
       } catch (e) {
         ctx.reply('Failed to register!');
@@ -194,8 +197,9 @@ module.exports = function() {
 
       try {
         logger.debug("pathToImage: "+pathToImage);
+        const fileContent = await fs.readFileSync(pathToImage);
         await bot.sendPhoto(subscriber.chatId, {
-          source: fs.readFileSync(pathToImage)
+          source: fileContent
         }, {
           caption: 'Wave forcast notification for ' + spot.name + '\n<a href="' + spot.url + '">More Info</a>',
           parse_mode: 'HTML'

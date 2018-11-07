@@ -1,3 +1,4 @@
+const util = require('util');
 const http = require('https');
 const logger = require('log4js').getLogger("telegramLogger");
 const config = require('config');
@@ -25,16 +26,27 @@ module.exports = function() {
   }
 
   function extLogErr(err, errorDesc) {
+    logger.debug('Logging to telegramLogger');
     let stack = "";
     try {
       if (err && err.stack) {
         stack = err.stack.toString();
       }
     } catch(exp) {
-      log('error gettig stack: ', exp);
+      logger.error('error gettig stack: ', exp);
     }
-    const newErrorDesc = `<i>${errorDesc}</i>\n${err}\n<code>${stack}<code>`;
 
+    const tagsToReplace = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;'
+    };
+
+    stack = stack.replace(/[&<>]/g, (tag) => {
+      return tagsToReplace[tag] || tag;
+    });
+
+    const newErrorDesc = `<i>${errorDesc}</i>\n${err}\n<code>${stack}</code>`;
     return log('#extError #error', `<b>An Error Has Occurred:</b>\n${newErrorDesc}`);
   }
 
@@ -53,9 +65,8 @@ module.exports = function() {
       parse_mode: 'HTML'
     });
 
-    // host: '149.154.167.40',
-
     const options = {
+      // host: '149.154.167.40',
       host: 'api.telegram.org',
       port: 443,
       path: "/bot" + token + "/sendMessage",
@@ -67,17 +78,20 @@ module.exports = function() {
     };
 
     try {
-      let req = http.request(options, function(res) {
-        res.setEncoding('utf8'); //// TODO: Catch here
-        // res.on('data', function(chunk) {
-        //   // logger.debug("body: " + chunk);
-        // });
+      logger.debug(`Sending logs to remote chatId#${loggerChatId}`);
+      let req = http.request(options, function(response) {
+        response.setEncoding('utf8');
+        if (!util.isNullOrUndefined(response.statusCode) && response.statusCode !== 200){
+          logger.error(`Error while sending http req, got error ${response.statusCode}: ${response.statusMessage}\nData was:\n${JSON.stringify(options)}\n$InnerData was:\n{data}`);
+          response.on('data', function (chunk) {
+            logger.error('RESPONSE BODY: ' + chunk);
+          });
+        }
       });
-
       req.write(data);
       req.end();
     } catch(err) {
-      logger.error('telegram log failed' + err);
+      logger.error('telegram log http req failed\n' + err);
     }
   }
 
