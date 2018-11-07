@@ -1,3 +1,4 @@
+const path = require('path');
 const config = require('config');
 const Screenshot = require('./screenshot/screenshot');
 const fs = require('fs');
@@ -14,7 +15,7 @@ const subscribeCmd = 'subscribe';
 const subscriberListCmd = 'subscriberList';
 const subscriberMulticastCmd = 'postToSubscribers';
 
-const saveDirPath = process.cwd() + '/lib/screenshots';
+const saveDirPath = path.join(process.cwd(), 'lib', 'screenshots');
 // const saveDirPath = __dirname;
 
 const urls = {
@@ -180,7 +181,7 @@ module.exports = function() {
 
     const msgHandler = async function(bot, subscriber) {
       const spot = getSpotFromCommand(subscriber.spot);
-      const pathToImage = saveDirPath + "\\" + spot.filename + '.png';
+      const pathToImage = path.join(saveDirPath , spot.filename + '.png')
       if(!spotsToPath[subscriber.spot]) {
         try {
           await Screenshot.getScreenshot(spot.url, spot.filename, saveDirPath);
@@ -209,7 +210,7 @@ module.exports = function() {
   }
 
   function startSubscriberForcastMulticastJob() {
-    logger.debug('setup cron job');
+    logger.info('setup cron job');
     subscriberMulticastJob.setup(subscriberForcastMulticast);
   }
 

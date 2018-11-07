@@ -76,7 +76,7 @@ module.exports = function() {
   async function startApp() {
     logger.info("connecting telegram api");
     const bot = new Telegraf(config.get('telegramBot.token'));
-    bot.use(errorHandlerMiddleware());
+    bot.use(errorHandlerMiddleware);
     forcastbot.setupForcastBot(bot);
 
     if (config.get('telegramBot.tunnel')){

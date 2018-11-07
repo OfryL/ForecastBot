@@ -1,3 +1,4 @@
+const path = require('path');
 const moment = require('moment');
 const config = require('config');
 const phantom = require('phantom');
@@ -92,11 +93,10 @@ module.exports = function() {
       filename: fileName,
       delay: 0,
       userAgent: config.get('Screenshots.userAgent'),
-      script: __dirname + "/runOnSite.js"
     };
 
-    props.forcastFilePathNameExt = workingDir + '/' + fileName + '.png';
-    props.fullForcastFilePathNameExt = workingDir + '/' + fileName + '.full.png';
+    props.forcastFilePathNameExt = path.join(workingDir, fileName + '.png');
+    props.fullForcastFilePathNameExt = path.join(workingDir, fileName + '.full.png');
 
     let isExist = await checkIfFileExist();
     if (isExist) {
