@@ -51,6 +51,9 @@ module.exports = function() {
   var botUsername;
 
   function logError(err, desc = null) {
+    if (desc) {
+      logger.error(desc);
+    }
     logger.error(err);
     telegramLogger.extLogErr(err, desc);
   }
@@ -83,6 +86,22 @@ module.exports = function() {
         delete isDone;
     };
     return stop;
+  }
+
+  function isBlockBotError(error) {
+      return (error.code == 403 && error.response.description === 'Forbidden: bot was blocked by the user');
+  }
+
+  function handleUserBlockBot(chatId) {
+    const logStr = `User#${chatId} was block bot, removing from db...`;
+    logger.info(logStr);
+    telegramLogger.logInfo(logStr);
+
+    try {
+      subscribeDao.removeSubscriber(chatId);
+    } catch (e) {
+      logError(e, `Failed to unregister #blocked user#${chatId}`);
+    }
   }
 
   async function executeMulticastReq(func) {
@@ -205,13 +224,18 @@ module.exports = function() {
           parse_mode: 'HTML'
         });
       } catch(error) {
-        logError(error ,"error sendPhoto to subscriber: " + JSON.stringify(subscriber) + " on spot :" + JSON.stringify(spot));
+          if(isBlockBotError(error)) {
+            handleUserBlockBot(subscriber.chatId);
+          } else {
+            logError(error ,"error sendPhoto to subscriber: " + JSON.stringify(subscriber) + " on spot :" + JSON.stringify(spot));
+          }
       }
       logger.debug('done');
     }
 
     await executeMulticastReq(msgHandler);
   }
+  subscriberForcastMulticast();
 
   function startSubscriberForcastMulticastJob() {
     logger.info('setup cron job');
