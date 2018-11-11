@@ -235,7 +235,6 @@ module.exports = function() {
 
     await executeMulticastReq(msgHandler);
   }
-  subscriberForcastMulticast();
 
   function startSubscriberForcastMulticastJob() {
     logger.info('setup cron job');
