@@ -25,6 +25,7 @@ const configLogs = function() {
 const Telegraf = require('telegraf');
 const telegramLogger = require('./errorHandler/telegramLogger');
 const errorHandlerMiddleware = require('./errorHandler/errorHandlerMiddleware');
+const serverToolsWare = require('./serverToolsWare');
 const forcastbot = require('./forcastbot');
 const localtunnel = require('localtunnel');
 const logger = log4js.getLogger("app");
@@ -76,6 +77,7 @@ module.exports = function() {
   async function startApp() {
     logger.info("connecting telegram api");
     const bot = new Telegraf(config.get('telegramBot.token'));
+    bot.use(serverToolsWare);
     bot.use(errorHandlerMiddleware);
     forcastbot.setupForcastBot(bot);
 
