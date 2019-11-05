@@ -74,4 +74,4 @@ module.exports = async function(ctx, next) {
     logger.error(err);
   }
   next();
-}
+};

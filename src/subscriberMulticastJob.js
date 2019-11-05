@@ -5,10 +5,15 @@ module.exports = function() {
   'use strict';
 
   function setup(func) {
-    cron.schedule('30 7 * * *', function(){
-      logger.debug('running job');
-      func();
-    });
+    try {
+      cron.schedule('30 7 * * *', function () {
+        logger.debug('running job');
+        func();
+      });
+    } catch (e) {
+      logger.error(e.stack || e);
+    }
+
   }
 
   return {

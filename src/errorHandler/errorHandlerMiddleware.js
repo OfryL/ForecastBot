@@ -6,6 +6,6 @@ module.exports = async function(ctx, next) {
   } catch(err) {
     const ctxData = JSON.stringify(ctx.message);
     logger.debug(err + '\nData: ' + ctxData);
-    logger.error(err);
+    logger.error(err.stack || err);
   }
 };
