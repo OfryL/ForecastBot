@@ -37,8 +37,9 @@ Logger.prototype.debug = function (message, ...optionalParams) {
 };
 
 const initLogger = function (namespace){
-    debug(getFormatHeader(namespace,) + CREATINGNEWLOGGER);
-    return new Logger(namespace);
+    let logger = new Logger(namespace);
+    logger.debug(CREATINGNEWLOGGER);
+    return logger;
 };
 
 module.exports = initLogger;

@@ -1,11 +1,11 @@
 const config = require('config');
+const logger = require("./logger")("app");
 const Telegraf = require('telegraf');
-const telegramLogger = require('./errorHandler/telegramLogger');
+const localtunnel = require('localtunnel');
 const errorHandlerMiddleware = require('./errorHandler/errorHandlerMiddleware');
 const serverToolsWare = require('./serverToolsWare');
 const forcastbot = require('./forcastbot');
-const localtunnel = require('localtunnel');
-const logger = require("./logger")("app");
+
 logger.debug("running on '"+ process.env.NODE_ENV +"' env");
 
 const fastify = require('fastify')({logger: {level: config.get('logger.level.fastify'), prettyPrint: true}});
@@ -79,7 +79,7 @@ module.exports = function() {
         try {
           bot.startPolling();
         } catch(err) {
-          telegramLogger.error(err, "error polling " + err);
+          logger.error(err, "error polling " + err);
         }
       } else {
         logger.error("error clearing old webhook");

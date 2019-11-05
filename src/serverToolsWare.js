@@ -1,5 +1,4 @@
 const logger = require('./logger')("app.serverToolsWare");
-const telegramLogger = require('./errorHandler/telegramLogger');
 const config = require('config');
 var moment = require('moment');
 
@@ -12,7 +11,7 @@ function authUser(ctx) {
   };
   if (user.username !== config.get('telegramBot.managerUsername')) {
     logger.debug("Unauthorize: " + user.username);
-    telegramLogger.warn("Unauthorize: " + user.username);
+    logger.warn("Unauthorize: " + user.username);
     //todo this replay to evry msg? ctx.reply("Unauthorize");
     return false;
   } else {
@@ -71,8 +70,8 @@ module.exports = async function(ctx, next) {
   	await parseMsg(ctx);
   } catch(err) {
     const ctxData = JSON.stringify(ctx.message);
-    logger.error(err + '\nData: ' + ctxData);
-    telegramLogger.error(err, 'serverToolsWare');
+    logger.debug(err + '\nData: ' + ctxData);
+    logger.error(err);
   }
   next();
 }
