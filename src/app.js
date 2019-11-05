@@ -6,7 +6,7 @@ const serverToolsWare = require('./serverToolsWare');
 const forcastbot = require('./forcastbot');
 const localtunnel = require('localtunnel');
 const logger = require("./logger")("app");
-logger.info("running on '"+ process.env.NODE_ENV +"' env");
+logger.debug("running on '"+ process.env.NODE_ENV +"' env");
 
 const fastify = require('fastify')({logger: {level: config.get('logger.level.fastify'), prettyPrint: true}});
 
@@ -20,11 +20,11 @@ module.exports = function() {
         if (err) {
           throw err;
         }
-        logger.info(tunnel.url);
+        logger.debug(tunnel.url);
       });
 
       tunnel.on('close', function() {
-        logger.warn('tunnel closed');
+        logger.debug('tunnel closed');
         onCloseCallback();
       });
 
@@ -51,7 +51,7 @@ module.exports = function() {
   }
 
   async function startApp() {
-    logger.info("connecting telegram api");
+    logger.debug("connecting telegram api");
     const bot = new Telegraf(config.get('telegramBot.token'));
     bot.use(serverToolsWare);
     bot.use(errorHandlerMiddleware);
@@ -79,8 +79,7 @@ module.exports = function() {
         try {
           bot.startPolling();
         } catch(err) {
-          const errorDesc = "error polling " + err;
-          telegramLogger.extLogErr(logger, err, errorDesc);
+          telegramLogger.error(err, "error polling " + err);
         }
       } else {
         logger.error("error clearing old webhook");

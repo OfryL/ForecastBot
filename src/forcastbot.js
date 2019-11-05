@@ -3,11 +3,10 @@ const path = require('path');
 const config = require('config');
 const Screenshot = require('./screenshot/screenshot');
 const fs = require('fs');
-const log4js = require('log4js');
 const subscribeDao = require('./subscribeDao/subscribeDao');
 const subscriberMulticastJob = require('./subscriberMulticastJob');
 
-const logger = log4js.getLogger("forcastbot");
+const logger = require('./logger')("app.forcastbot");
 const telegramLogger = require('./errorHandler/telegramLogger');
 
 const getForcastCmd = 'getforcast';
@@ -55,7 +54,7 @@ module.exports = function() {
       logger.error(desc);
     }
     logger.error(err);
-    telegramLogger.extLogErr(err, desc);
+    telegramLogger.error(err, desc);
   }
 
   function getSpotFromCommand(text) {
@@ -94,8 +93,8 @@ module.exports = function() {
 
   function handleUserBlockBot(chatId) {
     const logStr = `User#${chatId} was block bot, removing from db...`;
-    logger.info(logStr);
-    telegramLogger.logInfo(logStr);
+    logger.log(logStr);
+    telegramLogger.log(logStr);
 
     try {
       subscribeDao.removeSubscriber(chatId);
@@ -117,12 +116,12 @@ module.exports = function() {
   }
 
   function handleStartCmd(ctx) {
-    telegramLogger.logInfo(`Start from user: ${ctx.message.from.first_name}(@${ctx.message.from.username})`);
+    telegramLogger.log(`Start from user: ${ctx.message.from.first_name}(@${ctx.message.from.username})`);
     ctx.telegram.sendMessage(ctx.message.chat.id, START_MSG, {parse_mode:'HTML'} );
   }
 
   async function handleForcastReq(ctx) {
-    logger.info(`processing request from ${ctx.message.from.first_name}(@${ctx.message.from.username})`);
+    logger.log(`processing request from ${ctx.message.from.first_name}(@${ctx.message.from.username})`);
 
     const spot = getSpotFromCommand(ctx.message.text);
 
@@ -157,7 +156,7 @@ module.exports = function() {
       try {
         await subscribeDao.removeSubscriber(chatId);
         ctx.reply('You are now un-register :( ');
-        telegramLogger.logInfo(`${userDesc} #unregister`);
+        telegramLogger.log(`${userDesc} #unregister`);
       } catch (e) {
         ctx.reply('Failed to un-register!');
         logError(e, `Failed to #unregister ${userDesc}`);
@@ -166,7 +165,7 @@ module.exports = function() {
       try {
         await subscribeDao.addSubscriber(chatId, 'TelAviv');
         ctx.reply(`You are now register to forcast updates!\nTo un-register sent /${subscribeCmd} again any time.`);
-        telegramLogger.logInfo(`${userDesc} #register`);
+        telegramLogger.log(`${userDesc} #register`);
       } catch (e) {
         ctx.reply('Failed to register!');
         logError(e, `Failed to #register ${userDesc}`);
@@ -237,7 +236,7 @@ module.exports = function() {
   }
 
   function startSubscriberForcastMulticastJob() {
-    logger.info('setup cron job');
+    logger.debug('setup cron job');
     subscriberMulticastJob.setup(subscriberForcastMulticast);
   }
 
@@ -247,8 +246,8 @@ module.exports = function() {
         username: ctx.message.from.username
       };
       if (user.username !== config.get('telegramBot.managerUsername')) {
-        logger.warn("Unauthorize: " + user.username);
-        telegramLogger.logWarn("Unauthorize: " + user.username);
+        logger.debug("Unauthorize: " + user.username);
+        telegramLogger.warn("Unauthorize: " + user.username);
         ctx.reply("Unauthorize");
       } else {
         func(ctx);
@@ -274,8 +273,8 @@ module.exports = function() {
     bot.telegram.getMe().then(function(me) {
       bot.options.username = me.username;
       botUsername = me.username;
-      logger.info("bot name: " + me.username);
-      telegramLogger.logInfoProd(`Bot has started`);
+      logger.debug("bot name: " + me.username);
+      telegramLogger.log(`Bot has started`);
     }).catch((error) => {
       logError('#error getMe: ' + error);
     });

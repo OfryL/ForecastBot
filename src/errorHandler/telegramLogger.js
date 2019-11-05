@@ -9,23 +9,15 @@ const loggerChatId = config.get('telegramBot.loggerChatId');
 module.exports = function() {
   'use strict';
 
-
-  function logInfoProd(msg) {
-    if (process.env.NODE_ENV !== 'production') {
-      return;
-    }
-    return log('#info #prod', msg);
+  function log(msg) {
+    return logToRemote('#info', msg);
   }
 
-  function logInfo(msg) {
-    return log('#info', msg);
+  function warn(msg) {
+    return logToRemote('#warn', `<b>Warning:</b>\n${msg}`);
   }
 
-  function logWarn(msg) {
-    return log('#warn', `<b>Warning:</b>\n${msg}`);
-  }
-
-  function extLogErr(err, errorDesc) {
+  function error(err, errorDesc) {
     logger.debug('Logging to telegramLogger');
     let stack = "";
     try {
@@ -47,7 +39,7 @@ module.exports = function() {
     });
 
     const newErrorDesc = `<i>${errorDesc}</i>\n${err}\n<code>${stack}</code>`;
-    return log('#extError #error', `<b>An Error Has Occurred:</b>\n${newErrorDesc}`);
+    return logToRemote('#extError #error', `<b>An Error Has Occurred:</b>\n${newErrorDesc}`);
   }
 
   function logErr(err) {
@@ -55,10 +47,10 @@ module.exports = function() {
     if (err && err.stack) {
       msg += `\ntrace:\n${err.stack}`;
     }
-    return log('#error', `<b>An Error Has Occurred:</b>\n${msg}`);
+    return logToRemote('#error', `<b>An Error Has Occurred:</b>\n${msg}`);
   }
 
-  function log(lvl, msg) {
+  function logToRemote(lvl, msg) {
     const msgText = `${msg}\n${lvl}`;
     try {
       logger.debug(`Sending logs to remote chatId#${loggerChatId}`);
@@ -103,11 +95,8 @@ module.exports = function() {
   }
 
   return {
-    logInfoProd,
-    logInfo,
-    logWarn,
-    logErr,
-    extLogErr,
-    log
+    log,
+    warn,
+    error
   };
 }();

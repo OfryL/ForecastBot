@@ -6,7 +6,7 @@ module.exports = function() {
 
   function setup(func) {
     cron.schedule('30 7 * * *', function(){
-      logger.info('running job');
+      logger.debug('running job');
       func();
     });
   }

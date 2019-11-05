@@ -7,6 +7,6 @@ module.exports = async function(ctx, next) {
   } catch(err) {
     const ctxData = JSON.stringify(ctx.message);
     logger.error(err + '\nData: ' + ctxData);
-    telegramLogger.extLogErr(err, errorDesc);
+    telegramLogger.error(err, errorDesc);
   }
-}
+};

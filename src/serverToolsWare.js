@@ -11,9 +11,9 @@ function authUser(ctx) {
     username: ctx.message.from.username
   };
   if (user.username !== config.get('telegramBot.managerUsername')) {
-    logger.warn("Unauthorize: " + user.username);
-    telegramLogger.logWarn("Unauthorize: " + user.username);
-    ctx.reply("Unauthorize");
+    logger.debug("Unauthorize: " + user.username);
+    telegramLogger.warn("Unauthorize: " + user.username);
+    //todo this replay to evry msg? ctx.reply("Unauthorize");
     return false;
   } else {
     return true;
@@ -72,7 +72,7 @@ module.exports = async function(ctx, next) {
   } catch(err) {
     const ctxData = JSON.stringify(ctx.message);
     logger.error(err + '\nData: ' + ctxData);
-    telegramLogger.extLogErr(err, 'serverToolsWare');
+    telegramLogger.error(err, 'serverToolsWare');
   }
   next();
 }
