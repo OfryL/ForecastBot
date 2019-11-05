@@ -1,23 +1,16 @@
 const util = require('util');
 const http = require('https');
-const logger = require('../logger')("app.telegramLogger");
-const config = require('config');
+const sysLogger = require('./logger');
+const logger = sysLogger('telegramLogger');
 
+const CREATINGNEWLOGGER = 'Creating new tgLogger';
+
+
+const config = require('config');
 const token = config.get('telegramBot.token');
 const loggerChatId = config.get('telegramBot.loggerChatId');
 
-module.exports = function() {
-  'use strict';
-
-  function log(msg) {
-    return logToRemote('#info', msg);
-  }
-
-  function warn(msg) {
-    return logToRemote('#warn', `<b>Warning:</b>\n${msg}`);
-  }
-
-  function error(err, errorDesc) {
+const logerror = function(err) {
     logger.debug('Logging to telegramLogger');
     let stack = "";
     try {
@@ -40,19 +33,17 @@ module.exports = function() {
 
     const newErrorDesc = `<i>${errorDesc}</i>\n${err}\n<code>${stack}</code>`;
     return logToRemote('#extError #error', `<b>An Error Has Occurred:</b>\n${newErrorDesc}`);
-  }
-
-  function logErr(err) {
+  };
+const logErr = function(err) {
     let msg = err;
     if (err && err.stack) {
       msg += `\ntrace:\n${err.stack}`;
     }
     return logToRemote('#error', `<b>An Error Has Occurred:</b>\n${msg}`);
-  }
-
-  function logToRemote(lvl, msg) {
-    const msgText = `${msg}\n${lvl}`;
-    try {
+  };
+const logToRemote = function(namespace, lvl, msg) {
+  const msgText = `<i>[#${namespace}]</i> <b>[#${lvl}]</b> - <code>${msg}</code>`;
+  try {
       logger.debug(`Sending logs to remote chatId#${loggerChatId}`);
       sendMessageViaHttpReq(msgText, function(response) {
         response.setEncoding('utf8');
@@ -69,9 +60,8 @@ module.exports = function() {
     } catch(err) {
       logger.error('telegram log http req failed\n' + err);
     }
-  }
-
-  function sendMessageViaHttpReq (msgText, responseHandler) {
+  };
+const sendMessageViaHttpReq = function(msgText, responseHandler) {
     const data = JSON.stringify({
       chat_id: loggerChatId,
       text: msgText,
@@ -92,11 +82,37 @@ module.exports = function() {
       let req = http.request(options, responseHandler);
       req.write(data);
       req.end();
-  }
-
-  return {
-    log,
-    warn,
-    error
   };
-}();
+  
+function TelegramLogger(namespace) {
+  this.sysLogger = sysLogger(namespace);
+  this.loggerName = namespace;
+}
+
+TelegramLogger.prototype.log = function (message, ...optionalParams) {
+  this.sysLogger.log(message, ...optionalParams);
+  logToRemote(this.loggerName,'info', message);
+};
+
+TelegramLogger.prototype.warn = function (message, ...optionalParams) {
+  this.sysLogger.warn(message, ...optionalParams);
+  logToRemote(this.loggerName,'warning', message);
+};
+
+TelegramLogger.prototype.error = function (message, ...optionalParams) {
+  this.sysLogger.error(message, ...optionalParams);
+  logToRemote(this.loggerName,'error', message);
+};
+
+TelegramLogger.prototype.debug = function (message, ...optionalParams) {
+  this.sysLogger.debug(message, ...optionalParams);
+  // logToRemote(this.loggerName,'debug', message);
+};
+
+const initLogger = function (namespace){
+  let logger = new TelegramLogger(namespace);
+  logger.debug(CREATINGNEWLOGGER);
+  return logger;
+};
+
+module.exports = initLogger;

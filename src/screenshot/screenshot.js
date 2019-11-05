@@ -5,7 +5,7 @@ const phantom = require('phantom');
 const fs = require('fs');
 const util = require('util');
 
-const logger = require('../logger')("app.screenshot");
+const logger = require('../logger/telegramLogger')("app_screenshot");
 
 const screenshotWidth = 360;
 const screenshotHeight = 420;
@@ -47,7 +47,7 @@ module.exports = function() {
 
   async function getScreenshotFromWebPage() {
     logger.debug("getting screenshot started");
-    const phantomLogger = require('../logger')("app.screenshot.screenshot-phantom");
+    const phantomLogger = require('../logger/telegramLogger')("phantom");
     phantomLogger.level = 'warn';
     const start = new Date();
     const instance = await phantom.create([], {

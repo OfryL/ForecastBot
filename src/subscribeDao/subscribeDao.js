@@ -1,4 +1,4 @@
-const logger = require('../logger')("app.subscribeDao");
+const logger = require('../logger/telegramLogger')("app_subscribeDao");
 
 const dbDirPath = process.cwd() + '/lib/db/';
 const dbFileName = 'subscribers.db';

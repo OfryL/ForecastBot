@@ -1,4 +1,4 @@
-const logger = require('./logger')("app.subscriberMulticastJob");
+const logger = require('./logger/telegramLogger')("app_subscriberMulticastJob");
 const cron = require('node-cron');
 
 module.exports = function() {

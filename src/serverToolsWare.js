@@ -1,4 +1,4 @@
-const logger = require('./logger')("app.serverToolsWare");
+const logger = require('./logger/telegramLogger')("app_serverToolsWare");
 const config = require('config');
 var moment = require('moment');
 
@@ -53,7 +53,7 @@ async function parseMsg(ctx) {
   }
   if (ctx.message.text.includes('getUptime')) {
     ctx.reply(moment()
-          .subtract('seconds', os.uptime())
+          .subtract(os.uptime(), 'seconds')
           .toString());
   }
   if (ctx.message.text.includes('getOsInfo')) {

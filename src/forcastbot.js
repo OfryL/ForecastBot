@@ -6,7 +6,7 @@ const fs = require('fs');
 const subscribeDao = require('./subscribeDao/subscribeDao');
 const subscriberMulticastJob = require('./subscriberMulticastJob');
 
-const logger = require('./logger')("app.forcastbot");
+const logger = require('./logger/telegramLogger')("app_forcastbot");
 
 const getForcastCmd = 'getforcast';
 const subscribeCmd = 'subscribe';

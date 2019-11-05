@@ -1,5 +1,5 @@
 const config = require('config');
-const logger = require("./logger")("app");
+const logger = require("./logger/telegramLogger")("app");
 const Telegraf = require('telegraf');
 const localtunnel = require('localtunnel');
 const errorHandlerMiddleware = require('./errorHandler/errorHandlerMiddleware');

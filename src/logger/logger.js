@@ -1,8 +1,7 @@
 const sysDebugger = require('util');
-const debug = sysDebugger.debuglog('app.logger');
 const sysLogger = console;
 
-const CREATINGNEWLOGGER = 'Creating new logger';
+const CREATINGNEWLOGGER = 'Creating new console logger';
 const style = {
     'info': {'title': "info", 'colorCode': 34},
     'warn': {'title': "warn", 'colorCode': 33},
@@ -29,7 +28,7 @@ Logger.prototype.warn = function (message, ...optionalParams) {
 };
 
 Logger.prototype.error = function (message, ...optionalParams) {
-    sysLogger.warn(getFormatHeader(this.loggerName, style.error.title, style.error.colorCode) + message, ...optionalParams);
+    sysLogger.error(getFormatHeader(this.loggerName, style.error.title, style.error.colorCode) + message, ...optionalParams);
 };
 
 Logger.prototype.debug = function (message, ...optionalParams) {
