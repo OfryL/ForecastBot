@@ -1,36 +1,12 @@
 const config = require('config');
-const log4js = require('log4js');
-
-const configLogs = function() {
-  log4js.configure({
-    appenders: {
-      appLogs: {
-        type: 'file',
-        filename: 'app.log'
-      },
-      console: {
-        type: 'console'
-      }
-    },
-    categories: {
-      default: {
-        appenders: config.get('logger.appenders'),
-        level: config.get('logger.level.default')
-      }
-    },
-    "replaceConsole": true
-  });
-}();
-
 const Telegraf = require('telegraf');
 const telegramLogger = require('./errorHandler/telegramLogger');
 const errorHandlerMiddleware = require('./errorHandler/errorHandlerMiddleware');
 const serverToolsWare = require('./serverToolsWare');
 const forcastbot = require('./forcastbot');
 const localtunnel = require('localtunnel');
-const logger = log4js.getLogger("app");
+const logger = require("./logger")("app");
 logger.info("running on '"+ process.env.NODE_ENV +"' env");
-logger.debug("logging lvl set to - " + config.get('logger.level.default'));
 
 const fastify = require('fastify')({logger: {level: config.get('logger.level.fastify'), prettyPrint: true}});
 

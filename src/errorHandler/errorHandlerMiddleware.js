@@ -1,4 +1,4 @@
-const logger = require('log4js').getLogger("middlewareLogger");
+const logger = require('../logger')("app.middlewareLogger");
 const telegramLogger = require('./telegramLogger');
 
 module.exports = async function(ctx, next) {

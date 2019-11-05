@@ -1,5 +1,4 @@
-const log4js = require('log4js');
-const logger = log4js.getLogger("subscriberMulticastJob");
+const logger = require('./logger')("app.subscriberMulticastJob");
 const cron = require('node-cron');
 
 module.exports = function() {

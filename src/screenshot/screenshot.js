@@ -5,9 +5,7 @@ const phantom = require('phantom');
 const fs = require('fs');
 const util = require('util');
 
-const log4js = require('log4js');
-
-const logger = log4js.getLogger("screenshot");
+const logger = require('../logger')("app.screenshot");
 
 const screenshotWidth = 360;
 const screenshotHeight = 420;
@@ -49,7 +47,7 @@ module.exports = function() {
 
   async function getScreenshotFromWebPage() {
     logger.debug("getting screenshot started");
-    const phantomLogger = log4js.getLogger("screenshot-phantom");
+    const phantomLogger = require('../logger')("app.screenshot.screenshot-phantom");
     phantomLogger.level = 'warn';
     const start = new Date();
     const instance = await phantom.create([], {

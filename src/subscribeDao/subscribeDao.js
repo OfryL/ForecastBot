@@ -1,5 +1,4 @@
-const log4js = require('log4js');
-const logger = log4js.getLogger("subscribeDao");
+const logger = require('../logger')("app.subscribeDao");
 
 const dbDirPath = process.cwd() + '/lib/db/';
 const dbFileName = 'subscribers.db';

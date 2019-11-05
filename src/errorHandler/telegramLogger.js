@@ -1,6 +1,6 @@
 const util = require('util');
 const http = require('https');
-const logger = require('log4js').getLogger("telegramLogger");
+const logger = require('../logger')("app.telegramLogger");
 const config = require('config');
 
 const token = config.get('telegramBot.token');

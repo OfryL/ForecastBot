@@ -1,4 +1,4 @@
-const logger = require('log4js').getLogger("serverToolsWare");
+const logger = require('./logger')("app.serverToolsWare");
 const telegramLogger = require('./errorHandler/telegramLogger');
 const config = require('config');
 var moment = require('moment');
