@@ -1,22 +1,24 @@
 const config = require('config');
 const logger = require("./logger/telegramLogger")("app");
 const Telegraf = require('telegraf');
-const localtunnel = require('localtunnel');
 const errorHandlerMiddleware = require('./errorHandler/errorHandlerMiddleware');
 const serverToolsWare = require('./serverToolsWare');
 const forcastbot = require('./forcastbot');
 
 logger.debug("running on '"+ process.env.NODE_ENV +"' env");
 
-const fastify = require('fastify')({logger: {level: config.get('logger.level.fastify'), prettyPrint: true}});
+const isTunnelEnable = config.get('telegramBot.tunnel');
 
-const localtunnelport = config.get('telegramBot.httpserver.localtunnelport');
+let fastify, localtunnel, tunnelPort;
+if (isTunnelEnable) {
+  tunnelPort = config.get('telegramBot.httpserver.localtunnelport');
+  localtunnel = require('localtunnel');
+  fastify = require('fastify')({logger: {level: config.get('logger.level.fastify'), prettyPrint: true}});
+}
 
 module.exports = function() {
-
   async function setupTunnel(onCloseCallback) {
-
-      const tunnel = await localtunnel(localtunnelport, function(err, tunnel) {
+      const tunnel = await localtunnel(tunnelPort, function(err, tunnel) {
         if (err) {
           throw err;
         }
@@ -41,7 +43,7 @@ module.exports = function() {
 
     fastify.use(telegramBot.webhookCallback('/secret-path'));
 
-    fastify.listen(localtunnelport, '127.0.0.1', function(err) {
+    fastify.listen(tunnelPort, '127.0.0.1', function(err) {
       if (err) {
         logger.trace(err);
         throw err;
@@ -57,7 +59,7 @@ module.exports = function() {
     bot.use(errorHandlerMiddleware);
     forcastbot.setupForcastBot(bot);
 
-    if (config.get('telegramBot.tunnel')){
+    if (isTunnelEnable){
       try {
         const tunnelUrl = await setupTunnel(() => {});
         bot.telegram.setWebhook(tunnelUrl + '/secret-path');
@@ -71,7 +73,7 @@ module.exports = function() {
       try {
         success = await bot.telegram.deleteWebhook();
       } catch(e) {
-        logger.error("error clearing old webhook");
+        logger.error(e.stack || "error clearing old webhook\n" + e);
       }
 
       if (success) {
@@ -79,7 +81,7 @@ module.exports = function() {
         try {
           bot.startPolling();
         } catch(err) {
-          logger.error(err, "error polling " + err);
+          logger.error(err.stack || "error polling " + err);
         }
       } else {
         logger.error("error clearing old webhook");

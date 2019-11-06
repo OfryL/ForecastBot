@@ -48,13 +48,6 @@ module.exports = function() {
   var _bot;
   var botUsername;
 
-  function logError(e, desc = null) {
-    if (desc) {
-      logger.error(desc);
-    }
-    logger.error(e.stack || e);
-  }
-
   function getSpotFromCommand(text) {
     let args = text.split(" ");
     if (args.length > 0) {
@@ -97,7 +90,7 @@ module.exports = function() {
     try {
       subscribeDao.removeSubscriber(chatId);
     } catch (e) {
-      logError(e, `Failed to unregister #blocked user#${chatId}`);
+      logger.error(e.stack || `Failed to unregister #blocked user#${chatId} - ${e}`);
     }
   }
 
@@ -109,7 +102,7 @@ module.exports = function() {
         await func(_bot.telegram, s);
       }
     } catch(error) {
-      logError(error, 'executeMulticastReq');
+      logger.error(error.stack || 'executeMulticastReq - ' + error);
     }
   }
 
@@ -129,7 +122,7 @@ module.exports = function() {
     try {
       path = await Screenshot.getScreenshot(spot.url, spot.filename, saveDirPath);
     } catch (error) {
-        logError(error, 'error while getting the screenshot');
+        logger.error(error.stack || 'error while getting the screenshot - ' + error);
     }
 
     try {
@@ -139,8 +132,8 @@ module.exports = function() {
           parse_mode: 'HTML'
         });
     } catch (error) {
-      const description = !util.isNullOrUndefined(error.response) ? error.response.description : ''
-      logError(error, `while sending forcast msg (#${error.code})\n${description}`);  // => { ok: false, error_code: 400, description: 'Bad Request: chat not found' }
+      let description = !(error.response === undefined || error.response === null) ? error.response.description : '';
+      logger.error(error.stack || `while sending forcast msg (#${error.code})\n${description}\n${error}`);
     }
     stopShowUploadPhotoStatus();
     logger.debug('done');
@@ -157,7 +150,7 @@ module.exports = function() {
         logger.log(`${userDesc} #unregister`);
       } catch (e) {
         ctx.reply('Failed to un-register!');
-        logError(e, `Failed to #unregister ${userDesc}`);
+        logger.error(e.stack || `Failed to #unregister ${userDesc} - ${e}`);
       }
     } else {
       try {
@@ -166,7 +159,7 @@ module.exports = function() {
         logger.log(`${userDesc} #register`);
       } catch (e) {
         ctx.reply('Failed to register!');
-        logError(e, `Failed to #register ${userDesc}`);
+        logger.error(e.stack || `Failed to #register ${userDesc} - ${e}`);
       }
     }
   }
@@ -177,7 +170,7 @@ module.exports = function() {
       let chatIds = subscribers.map((s) => s.chatId);
       ctx.reply('subscribers: ' + chatIds);
     } catch(error) {
-      logError(error, 'handleSubscribeListReq');
+      logger.error(error.stack || 'handleSubscribeListReq - ' + error);
     }
   }
 
@@ -189,7 +182,7 @@ module.exports = function() {
     } else {
       executeMulticastReq((bot, subscriber) => {
         bot.sendMessage(subscriber.chatId, text).catch((err) => {
-          logError(err, 'Error sending podcast to: ' + JSON.stringify(subscriber));
+          logger.error(err.stack || `Error sending podcast to: ${JSON.stringify(subscriber)} - ${err}`);
         });
       });
     }
@@ -206,7 +199,7 @@ module.exports = function() {
           await Screenshot.getScreenshot(spot.url, spot.filename, saveDirPath);
         }
         catch(err) {
-          logError(err,'subscriberForcastMulticast');
+          logger.error(err.stack || 'subscriberForcastMulticast - ' + err);
         }
         spotsToPath[subscriber.spot] = pathToImage;
       }
@@ -224,11 +217,11 @@ module.exports = function() {
           if(isBlockBotError(error)) {
             handleUserBlockBot(subscriber.chatId);
           } else {
-            logError(error ,"error sendPhoto to subscriber: " + JSON.stringify(subscriber) + " on spot :" + JSON.stringify(spot));
+            logger.error(error.stack || `error sendPhoto to subscriber: ${JSON.stringify(subscriber)} on spot :${JSON.stringify(spot)} - ${error}`);
           }
       }
       logger.debug('done');
-    }
+    };
 
     await executeMulticastReq(msgHandler);
   }

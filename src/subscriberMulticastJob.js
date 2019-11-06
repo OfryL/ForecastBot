@@ -13,7 +13,6 @@ module.exports = function() {
     } catch (e) {
       logger.error(e.stack || e);
     }
-
   }
 
   return {

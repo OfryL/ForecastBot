@@ -19,8 +19,6 @@ function authUser(ctx) {
   }
 }
 
-
-
 function formatBytes(bytes) {
     if(bytes < 1024) return bytes + " Bytes";
     else if(bytes < 1048576) return(bytes / 1024).toFixed(3) + " KB";
@@ -40,28 +38,27 @@ function getWanIp() {
 }
 
 async function parseMsg(ctx) {
-  if (!authUser(ctx)){
-    return;
-  }
-
-	if (ctx.message.text.includes('getIp')) {
+  if (ctx.message.text.includes('getIp') && authUser(ctx)) {
 	  const ifaces = os.networkInterfaces();
 		ctx.reply(JSON.stringify(ifaces));
-	}
-  if (ctx.message.text.includes('getWanIp')) {
+  } else if (ctx.message.text.includes('getWanIp') && authUser(ctx)) {
     ctx.reply(await getWanIp());
-  }
-  if (ctx.message.text.includes('getUptime')) {
+  } else if (ctx.message.text.includes('getUptime') && authUser(ctx)) {
     ctx.reply(moment()
           .subtract(os.uptime(), 'seconds')
           .toString());
-  }
-  if (ctx.message.text.includes('getOsInfo')) {
+  } else if (ctx.message.text.includes('getOsInfo') && authUser(ctx)) {
     ctx.reply(
-        "platform: " + os.platform()
-      + "\nhostname: " + os.hostname()
-      + "\nos freemem: " + formatBytes(os.freemem())
+        "platform: " + os.platform() +
+        "\nhostname: " + os.hostname() +
+        "\nprocess freemem: " + formatBytes(os.freemem())
       );
+  } else if (ctx.message.text.includes('ophelp') && authUser(ctx)) {
+    ctx.reply("Available cmds:\n" +
+        "/getOsInfo\n" +
+        "/getUptime\n" +
+        "/getWanIp\n" +
+        "/getIp");
   }
 }
 
@@ -71,7 +68,7 @@ module.exports = async function(ctx, next) {
   } catch(err) {
     const ctxData = JSON.stringify(ctx.message);
     logger.debug(err + '\nData: ' + ctxData);
-    logger.error(err);
+    logger.error(err.stack || err);
   }
   next();
 };
