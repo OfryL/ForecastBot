@@ -257,7 +257,7 @@ module.exports = function() {
     logger.debug("seting up bot");
 
     bot.catch((err) => {
-      logError('Ooops', err);
+      logger.error(err.stack || 'Ooops: ' + err);
     });
 
     bot.start((ctx) => handleStartCmd(ctx));
@@ -267,7 +267,7 @@ module.exports = function() {
       logger.debug("bot name: " + me.username);
       logger.log(`Bot has started`);
     }).catch((error) => {
-      logError(error,'#error getMe');
+      logger.error(error.stack || '#error getMe: ' + error);
     });
 
     startSubscriberForcastMulticastJob();
