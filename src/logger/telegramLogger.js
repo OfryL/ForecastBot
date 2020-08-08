@@ -1,3 +1,4 @@
+/* eslint-disable func-names */
 const util = require('util');
 const http = require('https');
 const config = require('config');

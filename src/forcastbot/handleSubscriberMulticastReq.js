@@ -10,8 +10,8 @@ function handleSubscriberMulticastReq(ctx) {
   if (!text) {
     ctx.reply('Cant send blank msg!');
   } else {
-    executeMulticastReq((botInstance, subscriber) => {
-      botInstance.telegram.sendMessage(subscriber.chatId, text).catch((err) => {
+    executeMulticastReq((subscriber) => {
+      ctx.telegram.sendMessage(subscriber.chatId, text).catch((err) => {
         logger.error(err.stack || `Error sending podcast to: ${JSON.stringify(subscriber)} - ${err}`);
       });
     });

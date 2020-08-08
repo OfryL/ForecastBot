@@ -1,3 +1,4 @@
+/* eslint-disable func-names */
 const sysDebugger = require('util');
 
 const sysLogger = console;

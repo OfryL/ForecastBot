@@ -1,26 +1,18 @@
 const path = require('path');
 const fs = require('fs');
-const Screenshot = require('./screenshot');
-const subscriberMulticastJob = require('./subscriberMulticastJob');
-
 const logger = require('../logger/telegramLogger')('app_forcastbot');
 
-const {
-  isBlockBotError,
-  handleUserBlockBot,
-} = require('./user');
-
+const Screenshot = require('./screenshot');
+const subscriberMulticastJob = require('./subscriberMulticastJob');
+const { isBlockBotError, handleUserBlockBot } = require('./user');
 const { getSpotFromCommand } = require('./spots');
-const {
-  saveDirPath,
-} = require('./consts');
-
+const { saveDirPath } = require('./consts');
 const executeMulticastReq = require('./executeMulticastReq');
 
-async function subscriberForcastMulticast(bot) {
+const subscriberForcastMulticast = async (botInstance) => {
   const spotsToPath = {};
 
-  const msgHandler = async function (botInstance, subscriber) {
+  const msgHandler = async (subscriber) => {
     const spot = getSpotFromCommand(subscriber.spot);
     const pathToImage = path.join(saveDirPath, `${spot.filename}.png`);
     if (!spotsToPath[subscriber.spot]) {
@@ -51,13 +43,13 @@ async function subscriberForcastMulticast(bot) {
     logger.debug('done');
   };
 
-  await executeMulticastReq(bot, msgHandler);
-}
+  await executeMulticastReq(msgHandler);
+};
 
-function startSubscriberForcastMulticastJob(botInstance) {
+const startSubscriberForcastMulticastJob = (botInstance) => {
   logger.debug('setup cron job');
-  subscriberMulticastJob.setup(botInstance, subscriberForcastMulticast);
-  // subscriberForcastMulticast();
-}
+  subscriberMulticastJob.setup(botInstance, subscriberForcastMulticast); // todo test cron
+  // subscriberForcastMulticast(botInstance);
+};
 
 module.exports = { startSubscriberForcastMulticastJob };

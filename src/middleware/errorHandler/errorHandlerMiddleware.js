@@ -1,6 +1,6 @@
 const logger = require('../../logger/telegramLogger')('app_middlewareLogger');
 
-module.exports = async function (ctx, next) {
+const middlewareLogger = async (ctx, next) => {
   try {
     await next();
   } catch (err) {
@@ -9,3 +9,5 @@ module.exports = async function (ctx, next) {
     logger.error(err.stack || err);
   }
 };
+
+module.exports = middlewareLogger;
