@@ -62,7 +62,9 @@ async function parseMsg(ctx) {
 
 module.exports = async (ctx, next) => {
   try {
-    await parseMsg(ctx);
+    if (ctx.message.text) {
+      await parseMsg(ctx);
+    }
   } catch (err) {
     const ctxData = JSON.stringify(ctx.message);
     logger.debug(`${err}\nData: ${ctxData}`);

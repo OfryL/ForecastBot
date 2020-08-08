@@ -1,13 +1,11 @@
-const path = require('path');
 const fs = require('fs');
 const Screenshot = require('../utils/screenshot');
 
-const logger = require('../logger/telegramLogger')('app_forecast_handleForcastReq');
+const logger = require('../logger/telegramLogger')('app_forecast_handleForecastReq');
 
 const { getSpotFromCommand } = require('../utils/spots');
 
-const saveDirPath = path.join(process.cwd(), 'lib', 'screenshots');
-// const saveDirPath = __dirname;
+const { saveDirPath, contextMetadataKeys } = require('../utils/consts');
 
 async function showUploadPhotoStatus(ctx) {
   let { replyWithChatAction } = ctx;
@@ -27,7 +25,7 @@ async function showUploadPhotoStatus(ctx) {
   return stop;
 }
 
-async function handleForcastReq(ctx) {
+async function handleForecastReq(ctx) {
   logger.log(`processing request from ${ctx.message.from.first_name}(@${ctx.message.from.username})`);
 
   const spot = getSpotFromCommand(ctx.message.text);
@@ -44,15 +42,18 @@ async function handleForcastReq(ctx) {
   try {
     const fileContent = await fs.readFileSync(imagePath);
     ctx.replyWithPhoto({ source: fileContent }, {
-      caption: `Wave forcast notification for ${spot.name}\n<a href="${spot.url}">More Info</a>\n@{botUsername} to subscribe me!`,
+      caption: `Wave forecast notification for ${spot.name}
+<a href="${spot.url}">More Info</a>
+
+@${ctx.metadata[contextMetadataKeys.BOT_USERNAME]} to subscribe me!`,
       parse_mode: 'HTML',
     });
   } catch (error) {
     const description = !(error.response === undefined || error.response === null) ? error.response.description : '';
-    logger.error(error.stack || `while sending forcast msg (#${error.code})\n${description}\n${error}`);
+    logger.error(error.stack || `while sending forecast msg (#${error.code})\n${description}\n${error}`);
   }
   stopShowUploadPhotoStatus();
   logger.debug('done');
 }
 
-module.exports = handleForcastReq;
+module.exports = handleForecastReq;

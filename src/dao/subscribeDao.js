@@ -8,6 +8,14 @@ const db = new Datastore({
   filename: dbDirPath + dbFileName,
 });
 
+const notDeleted = {
+  $not: {
+    deletedAt: {
+      $exists: true,
+    },
+  },
+};
+
 const getSubscriber = (chatId) => {
   logger.debug(`getting ${chatId}`);
   return new Promise((resolve, reject) => {
@@ -16,23 +24,22 @@ const getSubscriber = (chatId) => {
         logger.error(loadErr);
         reject(loadErr);
       }
-      let exp = { chatId };
-      if (!chatId) {
-        exp = {};
-      }
-      db.find(exp, (err, docs) => {
-        logger.debug(`docs ${JSON.stringify(docs)}`);
+      db.findOne({
+        ...notDeleted,
+        chatId,
+      }, (err, doc) => {
+        logger.debug(`doc ${JSON.stringify(doc)}`);
         if (err) {
           logger.error(err);
           reject(err);
         }
-        resolve(docs);
+        resolve(doc);
       });
     });
   });
 };
 
-const addSubscriber = (chatId, spot) => {
+const addSubscriber = (userDesc, chatId, spot) => {
   logger.debug(`adding ${chatId}`);
   return new Promise((resolve, reject) => {
     db.loadDatabase((loadErr) => {
@@ -41,8 +48,11 @@ const addSubscriber = (chatId, spot) => {
         reject(loadErr);
       }
       const subscriber = {
+        userDesc,
         chatId,
         spot,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
       db.insert(subscriber, (err, newDoc) => {
         if (err) {
@@ -63,12 +73,19 @@ const removeSubscriber = (chatId) => {
         logger.error(loadErr);
         reject(loadErr);
       }
-      db.remove({ chatId }, (err, numRemoved) => {
+      db.update({
+        ...notDeleted,
+        chatId,
+      }, {
+        $set: {
+          deletedAt: new Date(),
+        },
+      }, {}, (err, numAffected) => {
         if (err) {
           logger.error(err);
           reject(err);
         }
-        if (numRemoved === 1) {
+        if (numAffected === 1) {
           resolve();
         } else {
           reject();
@@ -80,7 +97,23 @@ const removeSubscriber = (chatId) => {
 
 const getAllSubscribers = () => {
   logger.debug('get all');
-  return getSubscriber('');
+  // return getSubscriber('');
+  return new Promise((resolve, reject) => {
+    db.loadDatabase((loadErr) => {
+      if (loadErr) {
+        logger.error(loadErr);
+        reject(loadErr);
+      }
+      db.find(notDeleted, (err, docs) => {
+        logger.debug(`docs ${JSON.stringify(docs)}`);
+        if (err) {
+          logger.error(err);
+          reject(err);
+        }
+        resolve(docs);
+      });
+    });
+  });
 };
 
 module.exports = {

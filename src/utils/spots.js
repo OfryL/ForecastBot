@@ -2,22 +2,22 @@ const urls = {
   TelAviv: {
     name: 'Tel-Aviv - Hilton',
     url: 'https://magicseaweed.com/Hilton-Surf-Report/3658/',
-    filename: 'forcastTelAviv',
+    filename: 'forecastTelAviv',
   },
   Haifa: {
     name: 'Haifa - The Peak',
     url: 'https://magicseaweed.com/Haifa-The-Peak-Surf-Report/3671/',
-    filename: 'forcastHaifa',
+    filename: 'forecastHaifa',
   },
   Ashqelon: {
     name: 'Ashqelon',
     url: 'https://magicseaweed.com/Ashqelon-Surf-Report/3811/',
-    filename: 'forcastAshqelon',
+    filename: 'forecastAshqelon',
   },
   Ashdod: {
     name: 'Ashdod',
     url: 'https://magicseaweed.com/Ashdod-Surf-Report/4219/',
-    filename: 'forcastAshdod',
+    filename: 'forecastAshdod',
   },
 };
 

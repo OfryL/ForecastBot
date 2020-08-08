@@ -1,14 +1,15 @@
 const config = require('config');
 const logger = require('../logger/telegramLogger')('app_forecast');
 const {
-  getForcastCmd,
+  getForecastCmd,
   subscribeCmd,
   subscriberListCmd,
   subscriberMulticastCmd,
 } = require('../utils/consts');
-const { startSubscriberForcastMulticastJob } = require('../utils/subscriberForcastMulticast');
+const { initMetadata } = require('../utils/botMetadata');
+const { startSubscriberForecastMulticastJob } = require('../utils/subscriberForecastMulticast');
 
-const handleForcastReq = require('./handleForcastReq');
+const handleForecastReq = require('./handleForecastReq');
 const handleSubscribeReq = require('./handleSubscribeReq');
 const handleSubscribeListReq = require('./handleSubscribeListReq');
 const handleSubscriberMulticastReq = require('./handleSubscriberMulticastReq');
@@ -35,27 +36,21 @@ const registerManagerCmd = (botInstance, command, func) => {
   registerCmd(botInstance, command, (ctx) => authUser(ctx, func));
 };
 
-const setupForecast = (botInstance) => {
-  // bot = botInstance;
+const setupForecast = async (botInstance) => {
   logger.debug('seting up botInstance');
 
   botInstance.catch((err) => {
     logger.error(err.stack || `Ooops: ${err}`);
   });
 
+  // eslint-disable-next-line no-param-reassign
+  botInstance.context.metadata = await initMetadata(botInstance);
+
   botInstance.start((ctx) => handleStartCmd(ctx));
-  botInstance.telegram.getMe().then((me) => {
-    // botInstance.options.username = me.username;
-    // botUsername = me.username;
-    logger.debug(`bot name: ${me.username}`);
-    logger.log('Bot has started');
-  }).catch((error) => {
-    logger.error(error.stack || `#error getMe: ${error}`);
-  });
 
-  startSubscriberForcastMulticastJob(botInstance);
+  startSubscriberForecastMulticastJob(botInstance);
 
-  registerCmd(botInstance, getForcastCmd, handleForcastReq);
+  registerCmd(botInstance, getForecastCmd, handleForecastReq);
   registerCmd(botInstance, subscribeCmd, handleSubscribeReq);
 
   registerManagerCmd(botInstance, subscriberListCmd, handleSubscribeListReq);

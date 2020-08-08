@@ -9,7 +9,7 @@ const { getSpotFromCommand } = require('./spots');
 const { saveDirPath } = require('./consts');
 const executeMulticastReq = require('./executeMulticastReq');
 
-const subscriberForcastMulticast = async (botInstance) => {
+const subscriberForecastMulticast = async (botInstance) => {
   const spotsToPath = {};
 
   const msgHandler = async (subscriber) => {
@@ -19,7 +19,7 @@ const subscriberForcastMulticast = async (botInstance) => {
       try {
         await Screenshot.getScreenshot(spot.url, spot.filename, saveDirPath);
       } catch (err) {
-        logger.error(err.stack || `subscriberForcastMulticast - ${err}`);
+        logger.error(err.stack || `subscriberForecastMulticast - ${err}`);
       }
       spotsToPath[subscriber.spot] = pathToImage;
     }
@@ -30,7 +30,7 @@ const subscriberForcastMulticast = async (botInstance) => {
       await botInstance.telegram.sendPhoto(subscriber.chatId, {
         source: fileContent,
       }, {
-        caption: `Wave forcast notification for ${spot.name}\n<a href="${spot.url}">More Info</a>`,
+        caption: `Wave forecast notification for ${spot.name}\n<a href="${spot.url}">More Info</a>`,
         parse_mode: 'HTML',
       });
     } catch (error) {
@@ -46,10 +46,10 @@ const subscriberForcastMulticast = async (botInstance) => {
   await executeMulticastReq(msgHandler);
 };
 
-const startSubscriberForcastMulticastJob = (botInstance) => {
+const startSubscriberForecastMulticastJob = (botInstance) => {
   logger.debug('setup cron job');
-  subscriberMulticastJob.setup(botInstance, subscriberForcastMulticast); // todo test cron
-  // subscriberForcastMulticast(botInstance);
+  subscriberMulticastJob.setup(botInstance, subscriberForecastMulticast); // todo test cron
+  // subscriberForecastMulticast(botInstance);
 };
 
-module.exports = { startSubscriberForcastMulticastJob };
+module.exports = { startSubscriberForecastMulticastJob };

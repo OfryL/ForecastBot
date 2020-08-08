@@ -19,10 +19,10 @@ module.exports = (function () {
 
   /* eslint-disable */
   const getElementFromDom = function() {
-    var forcastDiv = document.querySelector('.msw-fc-current');
-    forcastDiv.innerHTML = '<header class="clearfix"><h3 class="forecast-sub-title forecast-sub-title-fluidfixed nomargin-top"><div class="forecast-sub-title-fluid"><span class="visible-xs heavy">Current Conditions</span></div></h3></header>'
-      + forcastDiv.innerHTML;
-    var parentNode = forcastDiv.parentNode;
+    var forecastDiv = document.querySelector('.msw-fc-current');
+    forecastDiv.innerHTML = '<header class="clearfix"><h3 class="forecast-sub-title forecast-sub-title-fluidfixed nomargin-top"><div class="forecast-sub-title-fluid"><span class="visible-xs heavy">Current Conditions</span></div></h3></header>'
+      + forecastDiv.innerHTML;
+    var parentNode = forecastDiv.parentNode;
     crditDiv = parentNode.querySelector('.msw-tide-vertical .nomargin-bottom');
     crditDiv.innerHTML = crditDiv.innerHTML
       + '<p class="nomargin-bottom"><small><strong>brought by @IsraelSurfBot</strong> Source: ' + document.URL.replace('https:\/\/','') + '</small></p>';
@@ -31,11 +31,11 @@ module.exports = (function () {
   /* eslint-enable */
 
   async function checkIfFileExist() {
-    if (!fs.existsSync(props.forcastFilePathNameExt)) {
+    if (!fs.existsSync(props.forecastFilePathNameExt)) {
       return false; // isExist = false
     }
 
-    const stats = fs.statSync(props.forcastFilePathNameExt);
+    const stats = fs.statSync(props.forecastFilePathNameExt);
 
     const startDate = moment(new Date(util.inspect(stats.mtime)), 'YYYY-M-DD HH:mm:ss');
     const endDate = moment(new Date(), 'YYYY-M-DD HH:mm:ss');
@@ -59,8 +59,8 @@ module.exports = (function () {
     const title = await page.property('title');
     logger.debug(`phantomjs - page opened (${status}): ${title}`);
 
-    logger.debug(`phantomjs - render to ${props.fullForcastFilePathNameExt}`);
-    await page.render(props.fullForcastFilePathNameExt);
+    logger.debug(`phantomjs - render to ${props.fullForecastFilePathNameExt}`);
+    await page.render(props.fullForecastFilePathNameExt);
     await page.property('viewportSize', { width: screenshotWidth, height: screenshotHeight });
     const clipRect = await page.evaluate(getElementFromDom);
     await page.property('clipRect', {
@@ -70,15 +70,15 @@ module.exports = (function () {
       height: clipRect.height,
     });
 
-    logger.debug(`phantomjs - render to ${props.forcastFilePathNameExt}`);
-    await page.render(props.forcastFilePathNameExt);
+    logger.debug(`phantomjs - render to ${props.forecastFilePathNameExt}`);
+    await page.render(props.forecastFilePathNameExt);
 
     await instance.exit();
 
     const end = new Date() - start;
     logger.debug('phantomjs - took %dms', end);
 
-    return props.forcastFilePathNameExt;
+    return props.forecastFilePathNameExt;
   }
 
   async function getScreenshot(url, fileName, workingDir) {
@@ -92,8 +92,8 @@ module.exports = (function () {
       userAgent: config.get('Screenshots.userAgent'),
     };
 
-    props.forcastFilePathNameExt = path.join(workingDir, `${fileName}.png`);
-    props.fullForcastFilePathNameExt = path.join(workingDir, `${fileName}.full.png`);
+    props.forecastFilePathNameExt = path.join(workingDir, `${fileName}.png`);
+    props.fullForecastFilePathNameExt = path.join(workingDir, `${fileName}.full.png`);
 
     const isExist = await checkIfFileExist();
     if (isExist) {
@@ -101,7 +101,7 @@ module.exports = (function () {
     } else {
       await getScreenshotFromWebPage();
     }
-    return props.forcastFilePathNameExt;
+    return props.forecastFilePathNameExt;
   }
 
   return {
