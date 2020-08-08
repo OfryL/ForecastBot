@@ -1,7 +1,7 @@
 {
-  "name": "israelsurfforcastbot",
+  "name": "ForecastBot",
   "version": "1.0.0",
-  "description": "a telegram bot for wave forcasting of the israeli coast",
+  "description": "a telegram bot for wave forecasting of the israeli coast",
   "main": "src/app.js",
   "scripts": {
     "start": "NODE_ENV=production node src/app.js",
@@ -10,21 +10,18 @@
     "start:prod": "cross-env NODE_ENV=production node src/app.js",
     "clean": "rimraf package-lock.json ./node_modules/ ./lib/*",
     "clean:compile": "rimraf ./lib/*",
-    "deploy": "now --name prod -e NODE_ENV=production --public",
-    "deploy:clean": "now rm prod -y",
-    "deploy:dev": "now --name dev --public",
-    "redeploy:dev": "now rm dev -y && now --name dev --public"
+    "lint": "./node_modules/.bin/eslint ."
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/OfryL/IsraelSurfForcastBot.git"
+    "url": "git+https://github.com/OfryL/ForecastBot.git"
   },
   "author": "Ofry Linkovsky",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/OfryL/IsraelSurfForcastBot/issues"
+    "url": "https://github.com/OfryL/ForecastBot/issues"
   },
-  "homepage": "https://github.com/OfryL/IsraelSurfForcastBot#readme",
+  "homepage": "https://github.com/OfryL/ForecastBot#readme",
   "dependencies": {
     "config": "1.30.0",
     "fastify": "3.1.1",
@@ -38,7 +35,10 @@
   },
   "devDependencies": {
     "cross-env": "latest",
-    "rimraf": "latest",
-    "nodemon": "latest"
+    "eslint": "^7.6.0",
+    "eslint-config-airbnb": "^18.2.0",
+    "eslint-plugin-import": "^2.22.0",
+    "nodemon": "latest",
+    "rimraf": "latest"
   }
 }

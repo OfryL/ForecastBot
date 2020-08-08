@@ -1,12 +1,11 @@
-const util = require('util');
 const path = require('path');
 const config = require('config');
-const Screenshot = require('./screenshot/screenshot');
 const fs = require('fs');
+const Screenshot = require('./screenshot/screenshot');
 const subscribeDao = require('./subscribeDao/subscribeDao');
 const subscriberMulticastJob = require('./subscriberMulticastJob');
 
-const logger = require('./logger/telegramLogger')("app_forcastbot");
+const logger = require('./logger/telegramLogger')('app_forcastbot');
 
 const getForcastCmd = 'getforcast';
 const subscribeCmd = 'subscribe';
@@ -18,40 +17,40 @@ const saveDirPath = path.join(process.cwd(), 'lib', 'screenshots');
 // const saveDirPath = __dirname;
 
 const urls = {
-  'TelAviv': {
+  TelAviv: {
     name: 'Tel-Aviv - Hilton',
     url: 'https://magicseaweed.com/Hilton-Surf-Report/3658/',
-    filename: 'forcastTelAviv'
+    filename: 'forcastTelAviv',
   },
-  'Haifa': {
+  Haifa: {
     name: 'Haifa - The Peak',
     url: 'https://magicseaweed.com/Haifa-The-Peak-Surf-Report/3671/',
-    filename: 'forcastHaifa'
+    filename: 'forcastHaifa',
   },
-  'Ashqelon': {
+  Ashqelon: {
     name: 'Ashqelon',
     url: 'https://magicseaweed.com/Ashqelon-Surf-Report/3811/',
-    filename: 'forcastAshqelon'
+    filename: 'forcastAshqelon',
   },
-  'Ashdod': {
+  Ashdod: {
     name: 'Ashdod',
     url: 'https://magicseaweed.com/Ashdod-Surf-Report/4219/',
-    filename: 'forcastAshdod'
-  }
+    filename: 'forcastAshdod',
+  },
 };
 
-const START_MSG = 'Welcome to Israel`s first waves forcast telegram bot.\n' +
-  'send me /getforcast to see more!\n' +
-  '<b>New</b> - you can /subscribe for every day forcast, stay tuned!';
+const START_MSG = 'Welcome to Israel`s first waves forcast telegram bot.\n'
+  + 'send me /getforcast to see more!\n'
+  + '<b>New</b> - you can /subscribe for every day forcast, stay tuned!';
 
-module.exports = function() {
-  var _bot;
-  var botUsername;
+module.exports = (function () {
+  let bot;
+  let botUsername;
 
   function getSpotFromCommand(text) {
-    let args = text.split(" ");
+    const args = text.split(' ');
     if (args.length > 0) {
-      let spot = urls[args[1]];
+      const spot = urls[args[1]];
       if (spot) {
         return spot;
       }
@@ -60,26 +59,25 @@ module.exports = function() {
   }
 
   async function showUploadPhotoStatus(ctx) {
-    var replyWithChatAction = ctx.replyWithChatAction;
-    await replyWithChatAction("upload_photo");
+    let { replyWithChatAction } = ctx;
+    await replyWithChatAction('upload_photo');
 
     const intervalObj = setInterval(() => {
       if (replyWithChatAction) {
-        replyWithChatAction("upload_photo");
+        replyWithChatAction('upload_photo');
       }
     }, 3000);
 
     const stop = () => {
-        logger.debug('clearing upload_photo replyWithChatAction...');
-        clearInterval(intervalObj);
-        delete replyWithChatAction;
-        delete isDone;
+      logger.debug('clearing upload_photo replyWithChatAction...');
+      clearInterval(intervalObj);
+      replyWithChatAction = null;
     };
     return stop;
   }
 
   function isBlockBotError(error) {
-      return (error.code == 403 && error.response.description === 'Forbidden: bot was blocked by the user');
+    return (error.code === 403 && error.response.description === 'Forbidden: bot was blocked by the user');
   }
 
   function handleUserBlockBot(chatId) {
@@ -95,20 +93,22 @@ module.exports = function() {
   }
 
   async function executeMulticastReq(func) {
+    const promises = [];
     try {
       const subscribers = await subscribeDao.getAllSubscribers();
-      for (let index = 0; index < subscribers.length; index++) {
-        let s = subscribers[index];
-        await func(_bot.telegram, s);
+      for (let index = 0; index < subscribers.length; index += 1) {
+        const s = subscribers[index];
+        promises.push(func(bot, s));
       }
-    } catch(error) {
-      logger.error(error.stack || 'executeMulticastReq - ' + error);
+      await Promise.all(promises);
+    } catch (error) {
+      logger.error(error.stack || `executeMulticastReq - ${error}`);
     }
   }
 
   function handleStartCmd(ctx) {
     logger.log(`Start from user: ${ctx.message.from.first_name}(@${ctx.message.from.username})`);
-    ctx.telegram.sendMessage(ctx.message.chat.id, START_MSG, {parse_mode:'HTML'} );
+    ctx.telegram.sendMessage(ctx.message.chat.id, START_MSG, { parse_mode: 'HTML' });
   }
 
   async function handleForcastReq(ctx) {
@@ -118,21 +118,21 @@ module.exports = function() {
 
     const stopShowUploadPhotoStatus = await showUploadPhotoStatus(ctx);
 
-    let path = ''
+    let imagePath = '';
     try {
-      path = await Screenshot.getScreenshot(spot.url, spot.filename, saveDirPath);
+      imagePath = await Screenshot.getScreenshot(spot.url, spot.filename, saveDirPath);
     } catch (error) {
-        logger.error(error.stack || 'error while getting the screenshot - ' + error);
+      logger.error(error.stack || `error while getting the screenshot - ${error}`);
     }
 
     try {
-      const fileContent = await fs.readFileSync(path);
+      const fileContent = await fs.readFileSync(imagePath);
       ctx.replyWithPhoto({ source: fileContent }, {
-          caption: 'Wave forcast notification for ' + spot.name + '\n<a href="' + spot.url + '">More Info</a>\n@' + botUsername + ' to subscribe me!',
-          parse_mode: 'HTML'
-        });
+        caption: `Wave forcast notification for ${spot.name}\n<a href="${spot.url}">More Info</a>\n@${botUsername} to subscribe me!`,
+        parse_mode: 'HTML',
+      });
     } catch (error) {
-      let description = !(error.response === undefined || error.response === null) ? error.response.description : '';
+      const description = !(error.response === undefined || error.response === null) ? error.response.description : '';
       logger.error(error.stack || `while sending forcast msg (#${error.code})\n${description}\n${error}`);
     }
     stopShowUploadPhotoStatus();
@@ -167,21 +167,21 @@ module.exports = function() {
   async function handleSubscribeListReq(ctx) {
     try {
       const subscribers = await subscribeDao.getAllSubscribers();
-      let chatIds = subscribers.map((s) => s.chatId);
-      ctx.reply('subscribers: ' + chatIds);
-    } catch(error) {
-      logger.error(error.stack || 'handleSubscribeListReq - ' + error);
+      const chatIds = subscribers.map((s) => s.chatId);
+      ctx.reply(`subscribers: ${chatIds}`);
+    } catch (error) {
+      logger.error(error.stack || `handleSubscribeListReq - ${error}`);
     }
   }
 
   function handleSubscriberMulticastReq(ctx) {
-    let text = ctx.message.text.replace('/' + subscriberMulticastCmd,'');
-    text = text.replace('/ ','');
+    let text = ctx.message.text.replace(`/${subscriberMulticastCmd}`, '');
+    text = text.replace('/ ', '');
     if (!text) {
       ctx.reply('Cant send blank msg!');
     } else {
-      executeMulticastReq((bot, subscriber) => {
-        bot.sendMessage(subscriber.chatId, text).catch((err) => {
+      executeMulticastReq((botInstance, subscriber) => {
+        botInstance.telegram.sendMessage(subscriber.chatId, text).catch((err) => {
           logger.error(err.stack || `Error sending podcast to: ${JSON.stringify(subscriber)} - ${err}`);
         });
       });
@@ -191,34 +191,33 @@ module.exports = function() {
   async function subscriberForcastMulticast() {
     const spotsToPath = {};
 
-    const msgHandler = async function(bot, subscriber) {
+    const msgHandler = async function (botInstance, subscriber) {
       const spot = getSpotFromCommand(subscriber.spot);
-      const pathToImage = path.join(saveDirPath , spot.filename + '.png')
-      if(!spotsToPath[subscriber.spot]) {
+      const pathToImage = path.join(saveDirPath, `${spot.filename}.png`);
+      if (!spotsToPath[subscriber.spot]) {
         try {
           await Screenshot.getScreenshot(spot.url, spot.filename, saveDirPath);
-        }
-        catch(err) {
-          logger.error(err.stack || 'subscriberForcastMulticast - ' + err);
+        } catch (err) {
+          logger.error(err.stack || `subscriberForcastMulticast - ${err}`);
         }
         spotsToPath[subscriber.spot] = pathToImage;
       }
 
       try {
-        logger.debug("pathToImage: "+pathToImage);
+        logger.debug(`pathToImage: ${pathToImage}`);
         const fileContent = await fs.readFileSync(pathToImage);
-        await bot.sendPhoto(subscriber.chatId, {
-          source: fileContent
+        await botInstance.telegram.sendPhoto(subscriber.chatId, {
+          source: fileContent,
         }, {
-          caption: 'Wave forcast notification for ' + spot.name + '\n<a href="' + spot.url + '">More Info</a>',
-          parse_mode: 'HTML'
+          caption: `Wave forcast notification for ${spot.name}\n<a href="${spot.url}">More Info</a>`,
+          parse_mode: 'HTML',
         });
-      } catch(error) {
-          if(isBlockBotError(error)) {
-            handleUserBlockBot(subscriber.chatId);
-          } else {
-            logger.error(error.stack || `error sendPhoto to subscriber: ${JSON.stringify(subscriber)} on spot :${JSON.stringify(spot)} - ${error}`);
-          }
+      } catch (error) {
+        if (isBlockBotError(error)) {
+          handleUserBlockBot(subscriber.chatId);
+        } else {
+          logger.error(error.stack || `error sendPhoto to subscriber: ${JSON.stringify(subscriber)} on spot :${JSON.stringify(spot)} - ${error}`);
+        }
       }
       logger.debug('done');
     };
@@ -231,56 +230,55 @@ module.exports = function() {
     subscriberMulticastJob.setup(subscriberForcastMulticast);
   }
 
-  function registerManagerCmd(bot, command, func) {
-    const authUser = function(ctx, func) {
-      let user = {
-        username: ctx.message.from.username
+  function registerCmd(botInstance, command, func) {
+    botInstance.command(`/${command}`, (ctx) => func(ctx));
+  }
+
+  function registerManagerCmd(botInstance, command, func) {
+    const authUser = (ctx, next) => {
+      const user = {
+        username: ctx.message.from.username,
       };
       if (user.username !== config.get('telegramBot.managerUsername')) {
-        logger.debug("Unauthorize: " + user.username);
-        logger.warn("Unauthorize: " + user.username);
-        ctx.reply("Unauthorize");
+        logger.debug(`Unauthorize: ${user.username}`);
+        logger.warn(`Unauthorize: ${user.username}`);
+        ctx.reply('Unauthorize');
       } else {
-        func(ctx);
+        next(ctx);
       }
     };
 
-    registerCmd(bot, command, (ctx) => authUser(ctx, func));
+    registerCmd(botInstance, command, (ctx) => authUser(ctx, func));
   }
 
-  function registerCmd(bot, command, func) {
-    bot.command('/' + command, (ctx) => func(ctx));
-  }
+  function setupForcastBot(newBot) {
+    bot = newBot;
+    logger.debug('seting up newBot');
 
-  function setupForcastBot(bot) {
-    _bot = bot;
-    logger.debug("seting up bot");
-
-    bot.catch((err) => {
-      logger.error(err.stack || 'Ooops: ' + err);
+    newBot.catch((err) => {
+      logger.error(err.stack || `Ooops: ${err}`);
     });
 
-    bot.start((ctx) => handleStartCmd(ctx));
-    bot.telegram.getMe().then(function(me) {
-      bot.options.username = me.username;
+    newBot.start((ctx) => handleStartCmd(ctx));
+    newBot.telegram.getMe().then((me) => {
+      // newBot.options.username = me.username;
       botUsername = me.username;
-      logger.debug("bot name: " + me.username);
-      logger.log(`Bot has started`);
+      logger.debug(`bot name: ${me.username}`);
+      logger.log('Bot has started');
     }).catch((error) => {
-      logger.error(error.stack || '#error getMe: ' + error);
+      logger.error(error.stack || `#error getMe: ${error}`);
     });
 
     startSubscriberForcastMulticastJob();
 
-    registerCmd(bot, getForcastCmd, handleForcastReq);
-    registerCmd(bot, subscribeCmd, handleSubscribeReq);
+    registerCmd(newBot, getForcastCmd, handleForcastReq);
+    registerCmd(newBot, subscribeCmd, handleSubscribeReq);
 
-    registerManagerCmd(bot, subscriberListCmd, handleSubscribeListReq);
-    registerManagerCmd(bot, subscriberMulticastCmd, handleSubscriberMulticastReq);
-
+    registerManagerCmd(newBot, subscriberListCmd, handleSubscribeListReq);
+    registerManagerCmd(newBot, subscriberMulticastCmd, handleSubscriberMulticastReq);
   }
 
   return {
-    setupForcastBot
+    setupForcastBot,
   };
-}();
+}());
