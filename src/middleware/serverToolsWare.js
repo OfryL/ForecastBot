@@ -62,7 +62,7 @@ async function parseMsg(ctx) {
 
 module.exports = async (ctx, next) => {
   try {
-    if (ctx.message.text) {
+    if (ctx.message && ctx.message.text) {
       await parseMsg(ctx);
     }
   } catch (err) {
