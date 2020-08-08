@@ -1,3 +1,4 @@
+
 name: Master CI
 
 on:
@@ -24,4 +25,4 @@ jobs:
         run: npm ci
 
       - name: Run ESlint
-      - run: npm run lint
+        run: npm run lint
