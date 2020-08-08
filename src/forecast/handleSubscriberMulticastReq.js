@@ -1,4 +1,4 @@
-const logger = require('../logger/telegramLogger')('app_forcastbot_handleSubscriberMulticastReq');
+const logger = require('../logger/telegramLogger')('app_forecast_handleSubscriberMulticastReq');
 
 const { subscriberMulticastCmd } = require('../utils/consts');
 

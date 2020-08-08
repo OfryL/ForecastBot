@@ -1,6 +1,6 @@
 const subscribeDao = require('../dao/subscribeDao');
 
-const logger = require('../logger/telegramLogger')('app_forcastbot_handleSubscribeReq');
+const logger = require('../logger/telegramLogger')('app_forecast_handleSubscribeReq');
 
 const { subscribeCmd } = require('../utils/consts');
 

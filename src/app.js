@@ -4,7 +4,7 @@ const fastify = require('fastify');
 const localtunnel = require('localtunnel');
 const logger = require('./logger/telegramLogger')('app');
 const { errorHandlerMiddleware, serverToolsWare } = require('./middleware');
-const forcastbot = require('./forcastbot');
+const forecast = require('./forecast');
 
 logger.debug(`running on '${process.env.NODE_ENV}' env`);
 
@@ -56,7 +56,7 @@ const startApp = async () => {
   const bot = new Telegraf(config.get('telegramBot.token'));
   bot.use(serverToolsWare);
   bot.use(errorHandlerMiddleware);
-  forcastbot.setupForcastBot(bot);
+  forecast.setupForecast(bot);
 
   if (isTunnelEnable) {
     try {

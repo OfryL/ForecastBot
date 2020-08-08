@@ -1,4 +1,4 @@
-const logger = require('../logger/telegramLogger')('app_forcastbot_users');
+const logger = require('../logger/telegramLogger')('app_forecast_users');
 
 const subscribeDao = require('../dao/subscribeDao');
 

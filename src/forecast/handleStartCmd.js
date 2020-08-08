@@ -1,4 +1,4 @@
-const logger = require('../logger/telegramLogger')('app_forcastbot_handleStartCmd');
+const logger = require('../logger/telegramLogger')('app_forecast_handleStartCmd');
 
 const { START_MSG } = require('../utils/consts');
 

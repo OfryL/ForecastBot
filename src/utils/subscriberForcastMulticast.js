@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs');
-const logger = require('../logger/telegramLogger')('app_forcastbot');
+const logger = require('../logger/telegramLogger')('app_forecast');
 
 const Screenshot = require('./screenshot');
 const subscriberMulticastJob = require('./subscriberMulticastJob');

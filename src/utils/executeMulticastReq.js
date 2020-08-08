@@ -1,6 +1,6 @@
 const subscribeDao = require('../dao/subscribeDao');
 
-const logger = require('../logger/telegramLogger')('app_forcastbot_executeMulticastReq');
+const logger = require('../logger/telegramLogger')('app_forecast_executeMulticastReq');
 
 const executeMulticastReq = async (func) => {
   const promises = [];

@@ -1,5 +1,5 @@
 const config = require('config');
-const logger = require('../logger/telegramLogger')('app_forcastbot');
+const logger = require('../logger/telegramLogger')('app_forecast');
 const {
   getForcastCmd,
   subscribeCmd,
@@ -35,7 +35,7 @@ const registerManagerCmd = (botInstance, command, func) => {
   registerCmd(botInstance, command, (ctx) => authUser(ctx, func));
 };
 
-const setupForcastBot = (botInstance) => {
+const setupForecast = (botInstance) => {
   // bot = botInstance;
   logger.debug('seting up botInstance');
 
@@ -63,5 +63,5 @@ const setupForcastBot = (botInstance) => {
 };
 
 module.exports = {
-  setupForcastBot,
+  setupForecast,
 };

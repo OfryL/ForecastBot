@@ -2,7 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const Screenshot = require('../utils/screenshot');
 
-const logger = require('../logger/telegramLogger')('app_forcastbot_handleForcastReq');
+const logger = require('../logger/telegramLogger')('app_forecast_handleForcastReq');
 
 const { getSpotFromCommand } = require('../utils/spots');
 
