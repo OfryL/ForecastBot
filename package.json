@@ -1,6 +1,6 @@
 {
   "name": "ForecastBot",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "a telegram bot for wave forecasting of the israeli coast",
   "main": "src/app.js",
   "scripts": {
