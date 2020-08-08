@@ -1,5 +1,15 @@
+config/default.json
+config/production.json
+
+lib/
+
 # Editor
 .idea/
+*.sublime-workspace
+*.sublime-settings
+*.sublime-project
+.je-project-settings
+.flowconfig
 
 # Logs
 logs

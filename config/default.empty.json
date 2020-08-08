@@ -1,9 +1,9 @@
 {
   "logger": {
-    "appenders": ["appLogs"],
+    "appenders": ["console"],
     "level": {
-      "default": "info",
-      "fastify": "warn"
+      "default": "debug",
+      "fastify": "info"
     }
   },
   "Screenshots": {
@@ -12,6 +12,7 @@
   "telegramBot": {
     "token": "",
     "loggerChatId": "",
+    "managerUsername": "",
     "tunnel": false,
     "httpserver": {
       "localtunnelport": 3000
