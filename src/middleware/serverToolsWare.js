@@ -2,7 +2,7 @@ const os = require('os');
 const http = require('http');
 const config = require('config');
 const moment = require('moment');
-const logger = require('./logger/telegramLogger')('app_serverToolsWare');
+const logger = require('../logger/telegramLogger')('app_serverToolsWare');
 
 function authUser(ctx) {
   const user = {

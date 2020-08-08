@@ -2,12 +2,11 @@ const sysDebugger = require('util');
 
 const sysLogger = console;
 
-const CREATINGNEWLOGGER = 'Creating new console logger';
 const style = {
   info: { title: 'info', colorCode: 34 },
   warn: { title: 'warn', colorCode: 33 },
   error: { title: 'error', colorCode: 31 },
-  debug: { title: 'debug', colorCode: 47 },
+  debug: { title: 'debug', colorCode: 32 },
 };
 
 const getFormatHeader = function (namespace, lvl, colorCode) {
@@ -50,7 +49,6 @@ Logger.prototype.debug = function (message, ...optionalParams) {
 
 const initLogger = function (namespace) {
   const logger = new Logger(namespace);
-  logger.debug(CREATINGNEWLOGGER);
   return logger;
 };
 

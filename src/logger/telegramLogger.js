@@ -7,8 +7,6 @@ const TELEGRAM_LOGGER = 'telegramLogger';
 const debug = util.debuglog(TELEGRAM_LOGGER);
 const logger = sysLogger(TELEGRAM_LOGGER);
 
-const CREATINGNEWLOGGER = 'Creating new tgLogger';
-
 const token = config.get('telegramBot.token');
 const loggerChatId = config.get('telegramBot.loggerChatId');
 
@@ -91,7 +89,6 @@ TelegramLogger.prototype.debug = function (message, ...optionalParams) {
 
 const initLogger = function (namespace) {
   const loggerInstance = new TelegramLogger(namespace);
-  loggerInstance.debug(CREATINGNEWLOGGER);
   return loggerInstance;
 };
 

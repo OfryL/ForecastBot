@@ -5,8 +5,8 @@ const phantom = require('phantom');
 const fs = require('fs');
 const util = require('util');
 
-const logger = require('../logger/telegramLogger')('app_screenshot');
-const phantomLogger = require('../logger/telegramLogger')('phantom');
+const logger = require('../../logger/telegramLogger')('app_screenshot');
+const phantomLogger = require('../../logger/telegramLogger')('phantom');
 
 phantomLogger.level = 'warn';
 
@@ -17,17 +17,18 @@ const screenshotHeight = 420;
 module.exports = (function () {
   const props = {};
 
-  const getElementFromDom = function () {
-    /* eslint-disable */
-    const forcastDiv = document.querySelector('.msw-fc-current');
-    forcastDiv.innerHTML = `<header class="clearfix"><h3 class="forecast-sub-title forecast-sub-title-fluidfixed nomargin-top"><div class="forecast-sub-title-fluid"><span class="visible-xs heavy">Current Conditions</span></div></h3></header>${
-      forcastDiv.innerHTML}`;
-    const { parentNode } = forcastDiv;
-    const crditDiv = parentNode.querySelector('.msw-tide-vertical .nomargin-bottom');
-    crditDiv.innerHTML = `${crditDiv.innerHTML}<p class="nomargin-bottom"><small><strong>brought by @IsraelSurfBot</strong> Source: ${document.URL.replace('https:\/\/', '')}</small></p>`;
+  /* eslint-disable */
+  const getElementFromDom = function() {
+    var forcastDiv = document.querySelector('.msw-fc-current');
+    forcastDiv.innerHTML = '<header class="clearfix"><h3 class="forecast-sub-title forecast-sub-title-fluidfixed nomargin-top"><div class="forecast-sub-title-fluid"><span class="visible-xs heavy">Current Conditions</span></div></h3></header>'
+      + forcastDiv.innerHTML;
+    var parentNode = forcastDiv.parentNode;
+    crditDiv = parentNode.querySelector('.msw-tide-vertical .nomargin-bottom');
+    crditDiv.innerHTML = crditDiv.innerHTML
+      + '<p class="nomargin-bottom"><small><strong>brought by @IsraelSurfBot</strong> Source: ' + document.URL.replace('https:\/\/','') + '</small></p>';
     return parentNode.getBoundingClientRect();
-    /* eslint-enable */
   };
+  /* eslint-enable */
 
   async function checkIfFileExist() {
     if (!fs.existsSync(props.forcastFilePathNameExt)) {

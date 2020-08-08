@@ -3,8 +3,7 @@ const Telegraf = require('telegraf');
 const fastify = require('fastify');
 const localtunnel = require('localtunnel');
 const logger = require('./logger/telegramLogger')('app');
-const errorHandlerMiddleware = require('./errorHandler/errorHandlerMiddleware');
-const serverToolsWare = require('./serverToolsWare');
+const { errorHandlerMiddleware, serverToolsWare } = require('./middleware');
 const forcastbot = require('./forcastbot');
 
 logger.debug(`running on '${process.env.NODE_ENV}' env`);
