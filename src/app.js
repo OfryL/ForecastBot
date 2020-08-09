@@ -3,7 +3,9 @@ const Telegraf = require('telegraf');
 const fastify = require('fastify');
 const localtunnel = require('localtunnel');
 const logger = require('./logger/telegramLogger')('app');
-const { errorHandlerMiddleware, serverToolsWare, trackActivityMiddleware } = require('./middleware');
+const {
+  errorHandlerMiddleware, serverToolsWare, trackActivityMiddleware, antiFloodMiddleware,
+} = require('./middleware');
 const forecast = require('./forecast');
 
 logger.debug(`running on '${process.env.NODE_ENV}' env`);
@@ -54,6 +56,7 @@ const setupFastisyServer = (telegramBot) => {
 const startApp = async () => {
   logger.debug('connecting telegram api');
   const bot = new Telegraf(config.get('telegramBot.token'));
+  bot.use(antiFloodMiddleware);
   bot.use(trackActivityMiddleware);
   bot.use(serverToolsWare);
   bot.use(errorHandlerMiddleware);
