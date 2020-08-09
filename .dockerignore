@@ -1,0 +1,14 @@
+.git
+.gitignore
+.github
+.dependabot
+node_modules
+lib
+config
+npm-debug.log
+Dockerfile*
+docker-compose*
+README.md
+LICENSE
+.vscode
+.idea
