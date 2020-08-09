@@ -3,7 +3,7 @@ const logger = require('../logger/telegramLogger')('app_subscriberMulticastJob')
 
 const setup = (botInstance, func) => {
   try {
-    cron.schedule('30 7 * * *', () => {
+    cron.schedule('30 6 * * *', () => {
       logger.debug('running job');
       func(botInstance);
     });

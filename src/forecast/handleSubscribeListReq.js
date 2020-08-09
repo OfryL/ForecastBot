@@ -5,7 +5,7 @@ const logger = require('../logger/telegramLogger')('app_forecast_handleSubscribe
 const handleSubscribeListReq = async (ctx) => {
   try {
     const subscribers = await subscribeDao.getAllSubscribers();
-    const chatsList = subscribers.map((s) => s.userDesc || s.chatId);
+    const chatsList = subscribers.map((s) => `\n${s.userDesc || s.chatId}`);
     ctx.reply(`subscribers: ${chatsList}`);
   } catch (error) {
     logger.error(error.stack || `handleSubscribeListReq - ${error}`);

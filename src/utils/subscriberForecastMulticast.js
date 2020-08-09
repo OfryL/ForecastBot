@@ -48,7 +48,7 @@ const subscriberForecastMulticast = async (botInstance) => {
 
 const startSubscriberForecastMulticastJob = (botInstance) => {
   logger.debug('setup cron job');
-  subscriberMulticastJob.setup(botInstance, subscriberForecastMulticast); // todo test cron
+  subscriberMulticastJob.setup(botInstance, subscriberForecastMulticast);
   // subscriberForecastMulticast(botInstance);
 };
 

@@ -1,16 +1,16 @@
+const bluebird = require('bluebird');
 const subscribeDao = require('../dao/subscribeDao');
 
 const logger = require('../logger/telegramLogger')('app_forecast_executeMulticastReq');
 
 const executeMulticastReq = async (func) => {
-  const promises = [];
   try {
     const subscribers = await subscribeDao.getAllSubscribers();
-    for (let index = 0; index < subscribers.length; index += 1) {
-      const s = subscribers[index];
-      promises.push(func(s));
-    }
-    await Promise.all(promises);
+    await bluebird.mapSeries(subscribers, async (subscriber) => {
+      logger.debug('subscriber', subscriber.userDesc, subscriber.chatId);
+      await func(subscriber);
+      logger.debug('done subscriber');
+    });
   } catch (error) {
     logger.error(error.stack || `executeMulticastReq - ${error}`);
   }
