@@ -24,23 +24,23 @@
   "homepage": "https://github.com/OfryL/ForecastBot#readme",
   "dependencies": {
     "bluebird": "^3.7.2",
-    "config": "1.30.0",
-    "fastify": "3.1.1",
-    "localtunnel": "1.9.0",
-    "log4js": "2.5.3",
-    "moment": "2.22.1",
-    "nedb": "1.8.0",
-    "node-cron": "2.0.3",
-    "phantom": "6.0.3",
-    "telegraf": "3.20.0",
+    "config": "^3.3.1",
+    "fastify": "^3.2.0",
+    "localtunnel": "^2.0.0",
+    "log4js": "^6.3.0",
+    "moment": "^2.27.0",
+    "nedb": "^1.8.0",
+    "node-cron": "^2.0.3",
+    "phantom": "^6.3.0",
+    "telegraf": "^3.38.0",
     "telegraf-ratelimit": "^2.0.0"
   },
   "devDependencies": {
-    "cross-env": "latest",
+    "cross-env": "^7.0.2",
     "eslint": "^7.6.0",
     "eslint-config-airbnb": "^18.2.0",
     "eslint-plugin-import": "^2.22.0",
-    "nodemon": "latest",
-    "rimraf": "latest"
+    "nodemon": "^2.0.4",
+    "rimraf": "^3.0.2"
   }
 }
