@@ -6,6 +6,9 @@ const setup = (botInstance, func) => {
     cron.schedule('30 6 * * *', () => {
       logger.debug('running job');
       func(botInstance);
+    }, {
+      scheduled: true,
+      timezone: 'Asia/Jerusalem',
     });
   } catch (e) {
     logger.error(e.stack || e);

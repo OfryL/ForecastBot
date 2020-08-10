@@ -55,6 +55,8 @@ const setupForecast = async (botInstance) => {
 
   registerManagerCmd(botInstance, subscriberListCmd, handleSubscribeListReq);
   registerManagerCmd(botInstance, subscriberMulticastCmd, handleSubscriberMulticastReq);
+
+  logger.log('seting up botInstance finish');
 };
 
 module.exports = {
