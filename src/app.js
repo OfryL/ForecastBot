@@ -7,7 +7,7 @@ const {
   errorHandlerMiddleware, serverToolsWare, trackActivityMiddleware, antiFloodMiddleware,
 } = require('./middleware');
 const forecastBot = require('./forecast');
-const { initMetadata } = require('./utils/botMetadata');
+const { useContext } = require('./utils/botContext');
 const { startSubscriberForecastMulticastJob } = require('./utils/subscriberForecastMulticast');
 
 logger.debug(`running on '${process.env.NODE_ENV}' env`);
@@ -63,7 +63,7 @@ const startApp = async () => {
   bot.use(serverToolsWare);
   bot.use(errorHandlerMiddleware);
   bot.use(forecastBot);
-  await initMetadata(bot);
+  await useContext(bot);
   startSubscriberForecastMulticastJob(bot);
   bot.catch((err) => {
     logger.error(err.stack || `Ooops: ${err}`);
