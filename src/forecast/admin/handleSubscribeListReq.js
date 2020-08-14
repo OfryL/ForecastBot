@@ -1,6 +1,6 @@
-const subscribeDao = require('../dao/subscribeDao');
+const subscribeDao = require('../../dao/subscribeDao');
 
-const logger = require('../logger/telegramLogger')('app_forecast_handleSubscribeListReq');
+const logger = require('../../logger/telegramLogger')('app_forecast_handleSubscribeListReq');
 
 const handleSubscribeListReq = async (ctx) => {
   try {

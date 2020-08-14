@@ -6,7 +6,9 @@ const logger = require('./logger/telegramLogger')('app');
 const {
   errorHandlerMiddleware, serverToolsWare, trackActivityMiddleware, antiFloodMiddleware,
 } = require('./middleware');
-const forecast = require('./forecast');
+const forecastBot = require('./forecast');
+const { initMetadata } = require('./utils/botMetadata');
+const { startSubscriberForecastMulticastJob } = require('./utils/subscriberForecastMulticast');
 
 logger.debug(`running on '${process.env.NODE_ENV}' env`);
 
@@ -60,7 +62,12 @@ const startApp = async () => {
   bot.use(trackActivityMiddleware);
   bot.use(serverToolsWare);
   bot.use(errorHandlerMiddleware);
-  await forecast.setupForecast(bot);
+  bot.use(forecastBot);
+  await initMetadata(bot);
+  startSubscriberForecastMulticastJob(bot);
+  bot.catch((err) => {
+    logger.error(err.stack || `Ooops: ${err}`);
+  });
 
   if (isTunnelEnable) {
     try {

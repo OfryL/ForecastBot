@@ -12,9 +12,12 @@ const getMe = async (botInstance) => {
   return '';
 };
 
-const initMetadata = async (botInstance) => ({
-  [contextMetadataKeys.BOT_USERNAME]: await getMe(botInstance),
-});
+const initMetadata = async (botInstance) => {
+  // eslint-disable-next-line no-param-reassign
+  botInstance.context.metadata = {
+    [contextMetadataKeys.BOT_USERNAME]: await getMe(botInstance),
+  };
+};
 
 module.exports = {
   initMetadata,

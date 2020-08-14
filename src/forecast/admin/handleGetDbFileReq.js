@@ -1,5 +1,5 @@
 const path = require('path');
-const logger = require('../logger/telegramLogger')('app_forecast_handleSubscriberMulticastReq');
+const logger = require('../../logger/telegramLogger')('app_forecast_handleSubscriberMulticastReq');
 
 const handleGetDbFileReq = async (ctx) => {
   logger.log('Sending db file');

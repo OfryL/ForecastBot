@@ -1,8 +1,8 @@
-const logger = require('../logger/telegramLogger')('app_forecast_handleSubscriberMulticastReq');
+const logger = require('../../logger/telegramLogger')('app_forecast_handleSubscriberMulticastReq');
 
-const { subscriberMulticastCmd } = require('../utils/consts');
+const { subscriberMulticastCmd } = require('../../utils/consts');
 
-const executeMulticastReq = require('../utils/executeMulticastReq');
+const executeMulticastReq = require('../../utils/executeMulticastReq');
 
 function handleSubscriberMulticastReq(ctx) {
   let text = ctx.message.text.replace(`/${subscriberMulticastCmd}`, '');
