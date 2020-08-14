@@ -5,6 +5,7 @@ const {
   subscribeCmd,
   subscriberListCmd,
   subscriberMulticastCmd,
+  getDbFile,
 } = require('../utils/consts');
 const { initMetadata } = require('../utils/botMetadata');
 const { startSubscriberForecastMulticastJob } = require('../utils/subscriberForecastMulticast');
@@ -14,6 +15,7 @@ const handleSubscribeReq = require('./handleSubscribeReq');
 const handleSubscribeListReq = require('./handleSubscribeListReq');
 const handleSubscriberMulticastReq = require('./handleSubscriberMulticastReq');
 const handleStartCmd = require('./handleStartCmd');
+const handleGetDbFileReq = require('./handleGetDbFileReq');
 
 const registerCmd = (botInstance, command, func) => {
   botInstance.command(`/${command}`, (ctx) => func(ctx));
@@ -55,6 +57,7 @@ const setupForecast = async (botInstance) => {
 
   registerManagerCmd(botInstance, subscriberListCmd, handleSubscribeListReq);
   registerManagerCmd(botInstance, subscriberMulticastCmd, handleSubscriberMulticastReq);
+  registerManagerCmd(botInstance, getDbFile, handleGetDbFileReq);
 
   logger.log('seting up botInstance finish');
 };

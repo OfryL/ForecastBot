@@ -5,6 +5,7 @@ const subscribeCmd = 'subscribe';
 
 const subscriberListCmd = 'subscriberList';
 const subscriberMulticastCmd = 'postToSubscribers';
+const getDbFile = 'getDbFile';
 
 const saveDirPath = path.join(process.cwd(), 'lib', 'screenshots');
 // const saveDirPath = __dirname;
@@ -25,4 +26,5 @@ module.exports = {
   saveDirPath,
   START_MSG,
   contextMetadataKeys,
+  getDbFile,
 };
