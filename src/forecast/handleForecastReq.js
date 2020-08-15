@@ -30,6 +30,8 @@ async function handleForecastReq(ctx) {
 
   const spot = getSpotFromCommand(ctx.message.text);
 
+  ctx.reply(ctx.i18n.t('botReplays.forecastReq.processing'));
+
   const stopShowUploadPhotoStatus = await showUploadPhotoStatus(ctx);
 
   let imagePath = '';
@@ -42,10 +44,9 @@ async function handleForecastReq(ctx) {
   try {
     const fileContent = await fs.readFileSync(imagePath);
     ctx.replyWithPhoto({ source: fileContent }, {
-      caption: `Wave forecast notification for ${spot.name}
-<a href="${spot.url}">More Info</a>
-
-@${ctx.metadata[contextMetadataKeys.BOT_USERNAME]} to subscribe me!`,
+      caption: ctx.i18n.t('botReplays.forecastReq.forecastReqReply', {
+        spot, username: ctx.metadata[contextMetadataKeys.BOT_USERNAME],
+      }),
       parse_mode: 'HTML',
     });
   } catch (error) {

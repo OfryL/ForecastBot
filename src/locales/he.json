@@ -1,0 +1,16 @@
+{
+  "botReplays": {
+    "langChanged": "אוקי",
+    "start": "ברוך/כה הבא/ה לבוט תחזית גלים🏄‍♂️\nלקבלת תחזית שלח/י /getforecast\nלהרשמה לתחזית יומית ועדכונים שלח/י /subscribe\n\n/lang_en Change lang to english",
+    "forecastReq": {
+      "processing": "התחזית בדרך",
+      "forecastReqReply": "תחזית גלים ל${spot.name}\n <a href=\"${spot.url}\">מידע נוסף</a>\n\n@${username} לתחזית נוספת"
+    },
+    "subscribeReq": {
+      "removeSubscriber": "בקשתך נקלטה, לא תקבל/י עדכנים מעכשיו",
+      "removeSubscriberFail": "Failed to un-register!",
+      "addSubscriber": "נרשמת לקבלת עדכונים!\nלהסרה שלח/י /${subscribeCmd}",
+      "addSubscriberFail": "Failed to register!"
+    }
+  }
+}

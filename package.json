@@ -33,6 +33,7 @@
     "node-cron": "^2.0.3",
     "phantom": "^6.3.0",
     "telegraf": "^3.38.0",
+    "telegraf-i18n": "^6.6.0",
     "telegraf-ratelimit": "^2.0.0"
   },
   "devDependencies": {

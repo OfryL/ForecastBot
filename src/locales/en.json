@@ -1,0 +1,17 @@
+{
+  "botReplays": {
+    "langChanged": "ok",
+    "start": "Welcome to Israel`s first waves forecast telegram bot.\nsend me /getforecast to see more!\n<b>New</b> - you can /subscribe for every day forecast, stay tuned\n\n/lang_he החלף שפה לעברית",
+    "forecastReq": {
+      "processing": "forecast is on the way",
+      "forecastReqReply": "Wave forecast notification for ${spot.name}\n<a href=\"${spot.url}\">More Info</a>\n\n@${username} to subscribe me!"
+    },
+    "subscribeReq": {
+      "removeSubscriber": "You are now un-register",
+      "removeSubscriberFail": "Failed to un-register!",
+      "addSubscriber": "You are now register to forecast updates!\nTo un-register sent /${subscribeCmd} again any time.",
+      "addSubscriberFail": "Failed to register!"
+    }
+  }
+}
+

@@ -13,19 +13,19 @@ async function handleSubscribeReq(ctx) {
     if (subscriber) {
       try {
         await subscribeDao.removeSubscriber(chatId);
-        ctx.reply('You are now un-register :( ');
+        ctx.reply(ctx.i18n.t('botReplays.subscribeReq.removeSubscriber'));
         logger.log(`${chatDesc} #unregister`);
       } catch (e) {
-        ctx.reply('Failed to un-register!');
+        ctx.reply(ctx.i18n.t('botReplays.subscribeReq.removeSubscriberFail'));
         logger.error(e.stack || `Failed to #unregister ${chatDesc} - ${e}`);
       }
     } else {
       try {
         await subscribeDao.addSubscriber(chatDesc, chatId, 'TelAviv');
-        ctx.reply(`You are now register to forecast updates!\nTo un-register sent /${subscribeCmd} again any time.`);
+        ctx.reply(ctx.i18n.t('botReplays.subscribeReq.addSubscriber', { subscribeCmd }));
         logger.log(`${chatDesc} #register`);
       } catch (e) {
-        ctx.reply('Failed to register!');
+        ctx.reply(ctx.i18n.t('botReplays.subscribeReq.addSubscriberFail'));
         logger.error(e.stack || `Failed to #register ${chatDesc} - ${e}`);
       }
     }
