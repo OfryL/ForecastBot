@@ -12,5 +12,8 @@
       "addSubscriber": "נרשמת לקבלת עדכונים!\nלהסרה שלח/י /${subscribeCmd}",
       "addSubscriberFail": "Failed to register!"
     }
+  },
+  "subscriberMulticastJob": {
+    "caption": "תחזית גלים לחוף ${spot.name}\n<a href=\"${spot.url}\">מידע נוסף</a>"
   }
 }

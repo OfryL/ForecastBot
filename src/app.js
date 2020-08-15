@@ -1,11 +1,8 @@
 const config = require('config');
-const Telegraf = require('telegraf');
 const fastify = require('fastify');
 const localtunnel = require('localtunnel');
+const bot = require('./appBot');
 const logger = require('./logger/telegramLogger')('app');
-const { useAll: useAllMw } = require('./middleware');
-const forecastBot = require('./forecast');
-const { useContext } = require('./utils/botContext');
 const { startSubscriberForecastMulticastJob } = require('./utils/subscriberForecastMulticast');
 
 logger.debug(`running on '${process.env.NODE_ENV}' env`);
@@ -54,15 +51,7 @@ const setupFastisyServer = (telegramBot) => {
 };
 
 const startApp = async () => {
-  logger.debug('connecting telegram api');
-  const bot = new Telegraf(config.get('telegramBot.token'));
-  useAllMw(bot);
-  await useContext(bot);
-  bot.use(forecastBot);
-  startSubscriberForecastMulticastJob(bot);
-  bot.catch((err) => {
-    logger.error(err.stack || `Ooops: ${err}`);
-  });
+  startSubscriberForecastMulticastJob();
 
   if (isTunnelEnable) {
     try {

@@ -12,6 +12,9 @@
       "addSubscriber": "You are now register to forecast updates!\nTo un-register sent /${subscribeCmd} again any time.",
       "addSubscriberFail": "Failed to register!"
     }
+  },
+  "subscriberMulticastJob": {
+    "caption": "Wave forecast notification for ${spot.name}\\n<a href=\"${spot.url}\">More Info</a>"
   }
 }
 

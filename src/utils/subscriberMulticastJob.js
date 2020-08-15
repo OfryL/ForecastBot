@@ -1,11 +1,11 @@
 const cron = require('node-cron');
 const logger = require('../logger/telegramLogger')('app_subscriberMulticastJob');
 
-const setup = (botInstance, func) => {
+const setup = (func) => {
   try {
     cron.schedule('30 6 * * *', () => {
       logger.debug('running job');
-      func(botInstance);
+      func();
     }, {
       scheduled: true,
       timezone: 'Asia/Jerusalem',
