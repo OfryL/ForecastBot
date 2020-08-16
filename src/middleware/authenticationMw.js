@@ -1,5 +1,5 @@
 const config = require('config');
-const logger = require('../logger/telegramLogger')('app_trackActivityMiddleware');
+const logger = require('../logger/telegramLogger')('app_authenticationMw');
 
 module.exports = async (ctx, next) => {
   const user = {

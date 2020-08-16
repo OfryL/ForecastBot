@@ -14,8 +14,8 @@ const useAll = (bot) => {
   bot.use(i18langPatchMw);
   bot.use(i18Mw.middleware);
 
-  // bot.use(antiFloodMiddleware);
-  // bot.use(trackActivityMiddleware);
+  bot.use(antiFloodMiddleware);
+  bot.use(trackActivityMiddleware);
   bot.use(metadataMw);
 
   bot.use(serverToolsWare);
