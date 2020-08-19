@@ -26,7 +26,8 @@
       "addSubscriberFail": "Failed to register!"
     },
     "liveVideo": {
-      "liveVideoCaption": "שידור חי מ${spot.tName}\n/spots לעוד חופים!"
+      "liveVideoCaption": "שידור חי מ${spot.tName}\n/spots לעוד חופים!",
+      "liveVideoCaptionTmp": "שידור חי מ${spot.tName}"
     },
     "spots": {
       "getSpots": "חופים:\n${spotsList}"

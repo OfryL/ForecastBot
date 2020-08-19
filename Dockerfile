@@ -1,5 +1,5 @@
-FROM node:alpine
-RUN apk add  --no-cache ffmpeg
+FROM node:lts
+#RUN apk add  --no-cache ffmpeg
 WORKDIR /usr/src/app
 COPY package*.json ./
 RUN NODE_ENV=production npm install

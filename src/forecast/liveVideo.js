@@ -28,7 +28,7 @@ const liveVideo = async (ctx) => {
   await ctx.replyWithVideo(
     { source: savePath },
     {
-      caption: ctx.i18n.t('botReplays.liveVideo.liveVideoCaption', {
+      caption: ctx.i18n.t('botReplays.liveVideo.liveVideoCaptionTmp', {
         spot: { ...spot, tName: ctx.i18n.t(spot.name) },
         spotsCmd,
       }),

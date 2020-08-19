@@ -26,7 +26,8 @@
       "addSubscriberFail": "Failed to register!"
     },
     "liveVideo": {
-      "liveVideoCaption": "Live from ${spot.tName}\n/${spotsCmd} for more!"
+      "liveVideoCaption": "Live from ${spot.tName}\n/${spotsCmd} for more!",
+      "liveVideoCaptionTmp": "Live from ${spot.tName}"
     },
     "spots": {
       "getSpots": "Available spots:\n${spotsList}"
