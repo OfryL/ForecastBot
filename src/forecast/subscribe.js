@@ -1,11 +1,12 @@
+const Composer = require('telegraf/composer');
 const subscribeDao = require('../dao/subscribeDao');
 
 const logger = require('../logger/telegramLogger')('app_forecast_handleSubscribeReq');
 
-const { subscribeCmd } = require('../utils/consts');
+const { botUsername, subscribeCmd } = require('../utils/consts');
 const { getChatDesc, validateGroupAdmin } = require('../utils/chatRepo');
 
-async function handleSubscribeReq(ctx) {
+async function subscribe(ctx) {
   const chatId = ctx.message.chat.id;
   const chatDesc = getChatDesc(ctx);
   const subscriber = await subscribeDao.getSubscriber(chatId);
@@ -35,4 +36,9 @@ async function handleSubscribeReq(ctx) {
   }
 }
 
-module.exports = handleSubscribeReq;
+const bot = new Composer();
+
+bot.command(`${subscribeCmd}`, subscribe);
+bot.command(`${subscribeCmd}@${botUsername}`, subscribe);
+
+module.exports = bot;

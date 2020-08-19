@@ -1,3 +1,6 @@
+const Composer = require('telegraf/composer');
+const { botUsername, langEnCmd, langHeCmd } = require('../utils/consts');
+
 function handleSetEnCmd(ctx) {
   ctx.i18n.locale('en');
   // eslint-disable-next-line no-underscore-dangle
@@ -12,7 +15,12 @@ function handleSetHeCmd(ctx) {
   ctx.reply(ctx.i18n.t('botReplays.langChanged'));
 }
 
-module.exports = {
-  handleSetEnCmd,
-  handleSetHeCmd,
-};
+const bot = new Composer();
+
+bot.command(`${langHeCmd}`, handleSetHeCmd);
+bot.command(`${langHeCmd}@${botUsername}`, handleSetHeCmd);
+
+bot.command(`${langEnCmd}`, handleSetEnCmd);
+bot.command(`${langEnCmd}@${botUsername}`, handleSetEnCmd);
+
+module.exports = bot;

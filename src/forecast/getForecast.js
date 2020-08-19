@@ -1,38 +1,21 @@
+const Composer = require('telegraf/composer');
 const fs = require('fs');
 const Screenshot = require('../utils/screenshot');
 
 const logger = require('../logger/telegramLogger')('app_forecast_handleForecastReq');
 
+const { botUsername, getForecastCmd } = require('../utils/consts');
 const { getSpotFromCommand } = require('../utils/spots');
+const showUploadStatus = require('../utils/showUploadStatus');
 
 const { saveDirPath, contextMetadataKeys } = require('../utils/consts');
 
-async function showUploadPhotoStatus(ctx) {
-  let { replyWithChatAction } = ctx;
-  await replyWithChatAction('upload_photo');
-
-  const intervalObj = setInterval(() => {
-    if (replyWithChatAction) {
-      replyWithChatAction('upload_photo');
-    }
-  }, 3000);
-
-  const stop = () => {
-    logger.debug('clearing upload_photo replyWithChatAction...');
-    clearInterval(intervalObj);
-    replyWithChatAction = null;
-  };
-  return stop;
-}
-
-async function handleForecastReq(ctx) {
+async function getForecast(ctx) {
   logger.log(`processing request from ${ctx.message.from.first_name}(@${ctx.message.from.username})`);
 
   const spot = getSpotFromCommand(ctx.message.text);
 
-  ctx.reply(ctx.i18n.t('botReplays.forecastReq.processing'));
-
-  const stopShowUploadPhotoStatus = await showUploadPhotoStatus(ctx);
+  const { stop: stopShowUploadPhotoStatus } = await showUploadStatus(ctx);
 
   let imagePath = '';
   try {
@@ -45,7 +28,8 @@ async function handleForecastReq(ctx) {
     const fileContent = await fs.readFileSync(imagePath);
     ctx.replyWithPhoto({ source: fileContent }, {
       caption: ctx.i18n.t('botReplays.forecastReq.forecastReqReply', {
-        spot, username: ctx.metadata[contextMetadataKeys.BOT_USERNAME],
+        spot: { ...spot, tName: ctx.i18n.t(spot.name) },
+        username: ctx.metadata[contextMetadataKeys.BOT_USERNAME],
       }),
       parse_mode: 'HTML',
     });
@@ -57,4 +41,9 @@ async function handleForecastReq(ctx) {
   logger.debug('done');
 }
 
-module.exports = handleForecastReq;
+const bot = new Composer();
+
+bot.command(`${getForecastCmd}`, getForecast);
+bot.command(`${getForecastCmd}@${botUsername}`, getForecast);
+
+module.exports = bot;

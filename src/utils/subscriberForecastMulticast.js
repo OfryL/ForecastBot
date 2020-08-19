@@ -32,10 +32,12 @@ const subscriberForecastMulticast = async () => {
     try {
       logger.debug(`pathToImage: ${pathToImage}`);
       const fileContent = await fs.readFileSync(pathToImage);
+      const lang = subscriber.lang || 'he';
       await bot.telegram.sendPhoto(subscriber.chatId, {
         source: fileContent,
       }, {
-        caption: i18n.t('he', 'subscriberMulticastJob.caption', { spot }),
+        caption: i18n.t(lang, 'subscriberMulticastJob.caption',
+          { spot: { ...spot, tName: i18n.t(lang, spot.name) } }),
         parse_mode: 'HTML',
       });
     } catch (error) {

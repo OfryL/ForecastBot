@@ -1,19 +1,38 @@
 {
+  "spots": {
+    "TelAviv": {
+      "name": "תל אביב הילטון"
+    },
+    "Haifa": {
+      "name": "חיפה הצוק"
+    },
+    "Ashqelon": {
+      "name": "אשקלון"
+    },
+    "Ashdod": {
+      "name": "אשדוד"
+    }
+  },
   "botReplays": {
     "langChanged": "אוקי",
     "start": "ברוך/כה הבא/ה לבוט תחזית גלים🏄‍♂️\nלקבלת תחזית שלח/י /getforecast\nלהרשמה לתחזית יומית ועדכונים שלח/י /subscribe\n\n/lang_en Change lang to english",
     "forecastReq": {
-      "processing": "התחזית בדרך",
-      "forecastReqReply": "תחזית גלים ל${spot.name}\n <a href=\"${spot.url}\">מידע נוסף</a>\n\n@${username} לתחזית נוספת"
+      "forecastReqReply": "תחזית גלים ל${spot.tName}\n <a href=\"${spot.url}\">מידע נוסף</a>\n\n@${username} לתחזית נוספת"
     },
     "subscribeReq": {
       "removeSubscriber": "בקשתך נקלטה, לא תקבל/י עדכנים מעכשיו",
       "removeSubscriberFail": "Failed to un-register!",
       "addSubscriber": "נרשמת לקבלת עדכונים!\nלהסרה שלח/י /${subscribeCmd}",
       "addSubscriberFail": "Failed to register!"
+    },
+    "liveVideo": {
+      "liveVideoCaption": "שידור חי מ${spot.tName}\n/spots לעוד חופים!"
+    },
+    "spots": {
+      "getSpots": "חופים:\n${spotsList}"
     }
   },
   "subscriberMulticastJob": {
-    "caption": "תחזית גלים לחוף ${spot.name}\n<a href=\"${spot.url}\">מידע נוסף</a>"
+    "caption": "תחזית גלים לחוף ${spot.tName}\n<a href=\"${spot.url}\">מידע נוסף</a>"
   }
 }

@@ -14,10 +14,10 @@ const handleGetDbFileReq = require('./handleGetDbFileReq');
 
 const bot = new Composer();
 
-bot.use(authenticationMw);
+const useMw = (next) => (ctx) => authenticationMw(ctx, next);
 
-bot.command(`${subscriberListCmd}`, handleSubscribeListReq);
-bot.command(`${subscriberMulticastCmd}`, handleSubscriberMulticastReq);
-bot.command(`${getDbFile}`, handleGetDbFileReq);
+bot.command(`${subscriberListCmd}`, useMw(handleSubscribeListReq));
+bot.command(`${subscriberMulticastCmd}`, useMw(handleSubscriberMulticastReq));
+bot.command(`${getDbFile}`, useMw(handleGetDbFileReq));
 
 module.exports = bot;

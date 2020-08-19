@@ -1,27 +1,25 @@
 const Composer = require('telegraf/composer');
-const {
-  getForecastCmd,
-  subscribeCmd,
-  langHeCmd,
-  langEnCmd,
-} = require('../utils/consts');
+
+const errorHandlerMiddleware = require('../middleware/errorHandler/errorHandlerMiddleware');
 
 const admin = require('./admin');
 
-const handleForecastReq = require('./handleForecastReq');
-const handleSubscribeReq = require('./handleSubscribeReq');
-const handleStartCmd = require('./handleStartCmd');
-const { handleSetEnCmd, handleSetHeCmd } = require('./langSet');
+const getForecast = require('./getForecast');
+const subscribe = require('./subscribe');
+const start = require('./start');
+const liveVideo = require('./liveVideo');
+const spots = require('./spots');
+const langSet = require('./langSet');
 
 const bot = new Composer();
 
+bot.use(errorHandlerMiddleware);
 bot.use(admin);
-
-bot.start(handleStartCmd);
-
-bot.command(`${getForecastCmd}`, handleForecastReq);
-bot.command(`${subscribeCmd}`, handleSubscribeReq);
-bot.command(`${langHeCmd}`, handleSetHeCmd);
-bot.command(`${langEnCmd}`, handleSetEnCmd);
+bot.use(start);
+bot.use(getForecast);
+bot.use(subscribe);
+bot.use(langSet);
+bot.use(spots);
+bot.use(liveVideo);
 
 module.exports = bot;

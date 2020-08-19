@@ -10,6 +10,7 @@ const i18Mw = require('./i18Mw');
 const metadataMw = require('./metadataMw');
 
 const useAll = (bot) => {
+  bot.use(errorHandlerMiddleware);
   bot.use(session());
   bot.use(i18langPatchMw);
   bot.use(i18Mw.middleware);
@@ -18,10 +19,6 @@ const useAll = (bot) => {
   bot.use(trackActivityMiddleware);
   bot.use(metadataMw);
 
-  bot.use(serverToolsWare);
-  bot.use(errorHandlerMiddleware);
-
-  bot.use(errorHandlerMiddleware);
   bot.use(serverToolsWare);
 };
 
