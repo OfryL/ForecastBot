@@ -4,11 +4,9 @@ const Screenshot = require('../utils/screenshot');
 
 const logger = require('../logger/telegramLogger')('app_forecast_handleForecastReq');
 
-const { botUsername, getForecastCmd } = require('../utils/consts');
+const { botUsername, getForecastCmd, saveDirPath, contextMetadataKeys, contextMetadataKey } = require('../utils/consts');
 const { getSpotFromCommand } = require('../utils/spots');
 const showUploadStatus = require('../utils/showUploadStatus');
-
-const { saveDirPath, contextMetadataKeys } = require('../utils/consts');
 
 async function getForecast(ctx) {
   logger.log(`processing request from ${ctx.message.from.first_name}(@${ctx.message.from.username})`);
@@ -29,7 +27,7 @@ async function getForecast(ctx) {
     ctx.replyWithPhoto({ source: fileContent }, {
       caption: ctx.i18n.t('botReplays.forecastReq.forecastReqReply', {
         spot: { ...spot, tName: ctx.i18n.t(spot.name) },
-        username: ctx.metadata[contextMetadataKeys.BOT_USERNAME],
+        username: ctx[contextMetadataKey][contextMetadataKeys.BOT_USERNAME],
       }),
       parse_mode: 'HTML',
     });

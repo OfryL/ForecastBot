@@ -1,5 +1,7 @@
 const { session } = require('telegraf');
 
+const logger = require('../logger/telegramLogger')('app_initMw');
+
 const errorHandlerMiddleware = require('./errorHandler/errorHandlerMiddleware');
 const serverToolsWare = require('./serverToolsWare');
 const trackActivityMiddleware = require('./trackActivityMiddleware');
@@ -10,6 +12,7 @@ const i18Mw = require('./i18Mw');
 const metadataMw = require('./metadataMw');
 
 const useAll = (bot) => {
+  logger.debug('init mw');
   bot.use(errorHandlerMiddleware);
   bot.use(session());
   bot.use(i18langPatchMw);
@@ -17,7 +20,6 @@ const useAll = (bot) => {
 
   bot.use(antiFloodMiddleware);
   bot.use(trackActivityMiddleware);
-  bot.use(metadataMw);
 
   bot.use(serverToolsWare);
 };
@@ -32,4 +34,5 @@ module.exports = {
   i18langPatchMw,
   i18Mw,
   session,
+  metadataMw,
 };

@@ -1,3 +1,5 @@
+docker stop forecastbot
+docker load -i /b/forecastBot/forecastbot.tar.gz
 docker rename forecastbot bot_tmp
 docker create --name="forecastbot" --net=host -e PUID=1000 -e PGID=1000 -e "TZ=Asia/Jerusalem" \
 --volumes-from bot_tmp \

@@ -1,8 +1,13 @@
+/* eslint-disable no-underscore-dangle */
+const logger = require('../logger/telegramLogger')('app_i18langPatchMw');
+
 module.exports = async (ctx, next) => {
   if (ctx.session) {
-    // eslint-disable-next-line no-underscore-dangle
-    ctx.session.__language_code = ctx.session.__language_code || 'he';
-    // todo get per user from db
+    if (!ctx.session.__language_code) {
+      logger.debug('patching i18');
+      ctx.session.__language_code = 'he';
+      // todo get per user from db
+    }
   }
-  next();
+  next(ctx);
 };
