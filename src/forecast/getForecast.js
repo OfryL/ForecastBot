@@ -4,7 +4,9 @@ const Screenshot = require('../utils/screenshot');
 
 const logger = require('../logger/telegramLogger')('app_forecast_handleForecastReq');
 
-const { botUsername, getForecastCmd, saveDirPath, contextMetadataKeys, contextMetadataKey } = require('../utils/consts');
+const {
+  botUsername, getForecastCmd, saveDirPath, contextMetadataKeys, contextMetadataKey,
+} = require('../utils/consts');
 const { getSpotFromCommand } = require('../utils/spots');
 const showUploadStatus = require('../utils/showUploadStatus');
 

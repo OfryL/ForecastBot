@@ -1,4 +1,4 @@
-const logger = require('../logger/telegramLogger')('app_forecast_chatRepo');
+// const logger = require('../logger/telegramLogger')('app_forecast_chatRepo');
 
 const isNotPrivateChat = (chat) => chat.type !== 'private';
 
