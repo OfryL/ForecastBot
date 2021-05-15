@@ -1,6 +1,6 @@
 const Composer = require('telegraf/composer');
 
-const errorHandlerMiddleware = require('../middleware/errorHandler/errorHandlerMiddleware');
+const { errorHandlerMiddleware, metadataMw } = require('../middleware');
 
 const admin = require('./admin');
 
@@ -14,6 +14,7 @@ const langSet = require('./langSet');
 const bot = new Composer();
 
 bot.use(errorHandlerMiddleware);
+bot.use(metadataMw);
 bot.use(admin);
 bot.use(start);
 bot.use(getForecast);

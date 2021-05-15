@@ -12,5 +12,5 @@ module.exports = async (ctx, next) => {
     logger.debug(`${err}\nData: ${ctxData}`);
     logger.log(err.stack || err);
   }
-  next();
+  next(ctx);
 };

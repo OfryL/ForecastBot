@@ -1,5 +1,5 @@
 const logger = require('../logger/telegramLogger')('app_forecast_initMetadata');
-const { contextMetadataKeys } = require('../utils/consts');
+const { contextMetadataKeys, contextMetadataKey } = require('../utils/consts');
 
 const getMe = async (telegram) => {
   try {
@@ -12,12 +12,18 @@ const getMe = async (telegram) => {
   return '';
 };
 
+// const bot = new Composer();
+//
+// module.exports = async (ctx, next) => {}
 module.exports = async (ctx, next) => {
-  if (!ctx.metadata) {
-    ctx.metadata = {};
+  console.debug('module', { m: module });
+  console.debug(`meta ${contextMetadataKey}:`, ctx[contextMetadataKey]);
+  if (!ctx[contextMetadataKey]) {
+    ctx[contextMetadataKey] = {};
   }
-  if (!ctx.metadata[contextMetadataKeys.BOT_USERNAME]) {
-    ctx.metadata[contextMetadataKeys.BOT_USERNAME] = await getMe(ctx.telegram);
+  if (!ctx[contextMetadataKey][contextMetadataKeys.BOT_USERNAME]) {
+    ctx[contextMetadataKey][contextMetadataKeys.BOT_USERNAME] = await getMe(ctx.telegram);
   }
-  next();
+  console.debug('after meta', ctx[contextMetadataKey]);
+  next(ctx);
 };

@@ -15,6 +15,7 @@ const saveDirPath = path.join(process.cwd(), 'lib', 'screenshots');
 const liveVideosSaveDirPath = path.join(process.cwd(), 'lib', 'liveVideos');
 // const saveDirPath = __dirname;
 
+const contextMetadataKey = 'state';
 const contextMetadataKeys = {
   BOT_USERNAME: 'botUsername',
 };
@@ -35,4 +36,5 @@ module.exports = {
   langHeCmd,
   langEnCmd,
   botUsername,
+  contextMetadataKey,
 };

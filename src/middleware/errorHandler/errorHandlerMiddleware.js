@@ -1,8 +1,8 @@
-const logger = require('../../logger/telegramLogger')('app_middlewareLogger');
+const logger = require('../../logger/telegramLogger')('app_errorLoggerMw');
 
 const middlewareLogger = async (ctx, next) => {
   try {
-    await next();
+    await next(ctx);
   } catch (err) {
     const ctxData = JSON.stringify(ctx.message);
     logger.debug(`${err}\nData: ${ctxData}`);
