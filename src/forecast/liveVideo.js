@@ -1,46 +1,55 @@
 const Composer = require('telegraf/composer');
+const fs = require('fs');
 const path = require('path');
-const moment = require('moment');
 const logger = require('../logger/telegramLogger')('app_forecast_liveVideo');
-const {
-  liveVideosSaveDirPath, spotsCmd, liveVideoCmd, botUsername,
-} = require('../utils/consts');
-const { spots } = require('../utils/spots');
+const { liveVideosSaveDirPath, liveVideoCmd, spotsCmd } = require('../utils/consts');
+const { getDefaultSpot } = require('../utils/spots');
 const getLiveStream = require('../utils/getLiveStream');
 const { getChatDesc } = require('../utils/chatRepo');
-const showUploadStatus = require('../utils/showUploadStatus');
+const showChatAction = require('../utils/chatAction');
 
-const getSavePath = (filename) => path.join(liveVideosSaveDirPath, `${filename}.${moment().valueOf()}.mp4`);
+const CAPTURE_TIMEOUT_MS = 90 * 1000;
+
+const withTimeout = (promise, ms, message) => Promise.race([
+  promise,
+  new Promise((_, reject) => setTimeout(() => reject(new Error(message)), ms)),
+]);
 
 const liveVideo = async (ctx) => {
   logger.log(`liveVideo from: ${getChatDesc(ctx)}`);
+  const spot = getDefaultSpot();
 
-  const spot = spots.TelAviv;
-  const savePath = getSavePath(spot.filename);
+  if (!spot.liveUrl) {
+    await ctx.reply(ctx.i18n.t('botReplays.liveVideo.unavailable'));
+    return;
+  }
 
-  const { stop: stopShowUploadVideoStatus } = await showUploadStatus(ctx, 'upload_video');
+  fs.mkdirSync(liveVideosSaveDirPath, { recursive: true });
+  const savePath = path.join(liveVideosSaveDirPath, `${spot.key}.${Date.now()}.mp4`);
+  const { stop } = await showChatAction(ctx, 'upload_video');
 
-  await getLiveStream({
-    liveUrl: spot.liveUrl,
-    savePath,
-  });
-
-  await ctx.replyWithVideo(
-    { source: savePath },
-    {
-      caption: ctx.i18n.t('botReplays.liveVideo.liveVideoCaptionTmp', {
-        spot: { ...spot, tName: ctx.i18n.t(spot.name) },
+  try {
+    await withTimeout(
+      getLiveStream({ liveUrl: spot.liveUrl, savePath }),
+      CAPTURE_TIMEOUT_MS,
+      `live stream capture timed out after ${CAPTURE_TIMEOUT_MS}ms`,
+    );
+    await ctx.replyWithVideo({ source: savePath }, {
+      caption: ctx.i18n.t('botReplays.liveVideo.liveVideoCaption', {
+        spot: ctx.i18n.t(spot.name),
         spotsCmd,
       }),
-    },
-  );
-
-  stopShowUploadVideoStatus();
+    });
+  } catch (error) {
+    logger.error(error.stack || `liveVideo failed - ${error}`);
+    await ctx.reply(ctx.i18n.t('botReplays.liveVideo.unavailable'));
+  } finally {
+    stop();
+    fs.promises.unlink(savePath).catch(() => {});
+  }
 };
 
 const bot = new Composer();
-
-bot.command(`${liveVideoCmd}`, liveVideo);
-bot.command(`${liveVideoCmd}@${botUsername}`, liveVideo);
+bot.command(liveVideoCmd, liveVideo);
 
 module.exports = bot;

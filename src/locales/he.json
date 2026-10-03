@@ -1,39 +1,60 @@
 {
   "spots": {
-    "TelAviv": {
-      "name": "תל אביב הילטון"
+    "TelAviv": { "name": "תל אביב הילטון" },
+    "Haifa": { "name": "חיפה הצוק" },
+    "Ashdod": { "name": "אשדוד" },
+    "Ashqelon": { "name": "אשקלון" }
+  },
+  "compass": {
+    "N": "צפון", "NE": "צפון-מזרח", "E": "מזרח", "SE": "דרום-מזרח", "S": "דרום", "SW": "דרום-מערב", "W": "מערב", "NW": "צפון-מערב"
+  },
+  "forecast": {
+    "header": "🏄 <b>${spot}</b> · ${weekday} ${date}, ${time}",
+    "conditions": "🌊 ${height} מ׳ · ⏱ ${period} שנ׳ · 🧭 ${direction} (${degrees}°)",
+    "rating": {
+      "flat": "פלאט",
+      "small": "קטן, יום של לונגבורד",
+      "fun": "גודל כיפי",
+      "good": "גלים טובים!",
+      "big": "גדול - למנוסים בלבד"
     },
-    "Haifa": {
-      "name": "חיפה הצוק"
+    "wind": "💨 ${speed} קשר מ${direction} (${type})",
+    "windType": {
+      "offshore": "אופשור",
+      "onshore": "אונשור",
+      "cross": "רוח צד"
     },
-    "Ashqelon": {
-      "name": "אשקלון"
-    },
-    "Ashdod": {
-      "name": "אשדוד"
-    }
+    "temperature": "🌡 ${temperature}°C",
+    "todayPeak": "<b>היום:</b> עד ${height} מ׳ בסביבות ${time}",
+    "nextDaysTitle": "<b>הימים הקרובים</b>",
+    "nextDayLine": "${emoji} ${weekday} ${date}: ${height} מ׳ · ${period} שנ׳ · ${direction}",
+    "footer": "<a href=\"${url}\">דוח מפורט</a> · נתונים: Open-Meteo"
   },
   "botReplays": {
     "langChanged": "אוקי",
-    "start": "ברוך/כה הבא/ה לבוט תחזית גלים🏄‍♂️\nלקבלת תחזית שלח/י /getforecast\nלהרשמה לתחזית יומית ועדכונים שלח/י /subscribe\n\n/lang_en Change lang to english",
+    "start": "ברוך/כה הבא/ה לבוט תחזית גלים🏄‍♂️\n\n/${getForecastCmd} - תחזית נוכחית (תל אביב)\n/${spotsCmd} - תחזית לחופים נוספים\n/${subscribeCmd} - תחזית יומית כל בוקר\n/${liveVideoCmd} - מצלמה חיה\n\n/${langEnCmd} Change language to English",
+    "help": "פקודות:\n/${getForecastCmd} [חוף] - תחזית גלים\n/${spotsCmd} - רשימת חופים\n/${subscribeCmd} [חוף] - הרשמה/הסרה מתחזית יומית\n/${liveVideoCmd} - מצלמה חיה\n/${langEnCmd} · /${langHeCmd} - שפה",
     "forecastReq": {
-      "forecastReqReply": "תחזית גלים ל${spot.tName}\n <a href=\"${spot.url}\">מידע נוסף</a>\n\n@${username} לתחזית נוספת"
+      "hint": "/${subscribeCmd} לתחזית יומית · /${spotsCmd} לחופים נוספים",
+      "failed": "לא הצלחתי להביא את התחזית כרגע, נסו שוב בעוד כמה דקות 🙏"
     },
     "subscribeReq": {
-      "removeSubscriber": "בקשתך נקלטה, לא תקבל/י עדכנים מעכשיו",
-      "removeSubscriberFail": "Failed to un-register!",
-      "addSubscriber": "נרשמת לקבלת עדכונים!\nלהסרה שלח/י /${subscribeCmd}",
-      "addSubscriberFail": "Failed to register!"
+      "removeSubscriber": "בקשתך נקלטה, לא תקבל/י עדכונים מעכשיו",
+      "removeSubscriberFail": "ההסרה נכשלה!",
+      "addSubscriber": "נרשמת לתחזית היומית ל${spot}!\nלהסרה שלח/י /${subscribeCmd} שוב בכל עת.",
+      "addSubscriberFail": "ההרשמה נכשלה!",
+      "adminsOnly": "רק מנהלי הקבוצה יכולים לעשות את זה 🙁",
+      "unknownSpot": "לא מכיר את החוף הזה. שלח/י /${spotsCmd} לרשימת החופים."
     },
     "liveVideo": {
-      "liveVideoCaption": "שידור חי מ${spot.tName}\n/spots לעוד חופים!",
-      "liveVideoCaptionTmp": "שידור חי מ${spot.tName}"
+      "liveVideoCaption": "שידור חי מ${spot}\n/${spotsCmd} לעוד חופים!",
+      "unavailable": "המצלמה החיה לא זמינה כרגע 📷"
     },
     "spots": {
       "getSpots": "חופים:\n${spotsList}"
     }
   },
   "subscriberMulticastJob": {
-    "caption": "תחזית גלים לחוף ${spot.tName}\n<a href=\"${spot.url}\">מידע נוסף</a>"
+    "title": "☀️ בוקר טוב! הנה התחזית להיום:"
   }
 }

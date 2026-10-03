@@ -1,0 +1,14 @@
+{
+  "telegramBot": {
+    "token": "TELEGRAM_BOT_TOKEN",
+    "loggerChatId": "TELEGRAM_LOGGER_CHAT_ID",
+    "managerUsername": "TELEGRAM_MANAGER_USERNAME",
+    "tunnel": { "__name": "TELEGRAM_USE_TUNNEL", "__format": "json" },
+    "httpserver": {
+      "port": { "__name": "PORT", "__format": "json" }
+    }
+  },
+  "forecast": {
+    "dailyBroadcastCron": "FORECAST_DAILY_CRON"
+  }
+}

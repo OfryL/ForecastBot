@@ -1,0 +1,7 @@
+{
+  "telegramBot": {
+    "token": "123456:ABC-your-bot-token-from-BotFather",
+    "loggerChatId": "",
+    "managerUsername": "your_telegram_username"
+  }
+}

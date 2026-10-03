@@ -1,16 +1,14 @@
 const logger = require('../logger/telegramLogger')('app_trackActivityMiddleware');
-
-async function parseData(ctx) {
-  logger.log(JSON.stringify(ctx.message));
-}
+const { getChatDesc } = require('../utils/chatRepo');
 
 module.exports = async (ctx, next) => {
   try {
-    await parseData(ctx);
+    if (ctx.message) {
+      const text = ctx.message.text || `<${ctx.updateSubTypes.join(',')}>`;
+      logger.log(`${getChatDesc(ctx)}: ${text}`);
+    }
   } catch (err) {
-    const ctxData = JSON.stringify(ctx.message);
-    logger.debug(`${err}\nData: ${ctxData}`);
-    logger.log(err.stack || err);
+    logger.debug(`track activity failed: ${err}`);
   }
-  next();
+  return next();
 };

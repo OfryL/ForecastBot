@@ -1,49 +1,36 @@
 const Composer = require('telegraf/composer');
-const fs = require('fs');
-const Screenshot = require('../utils/screenshot');
+const logger = require('../logger/telegramLogger')('app_forecast_getForecast');
+const openMeteo = require('../services/openMeteo');
+const { formatForecast } = require('./formatForecast');
+const { spots, spotKeys, getSpotFromCommand } = require('../utils/spots');
+const { getForecastCmd, subscribeCmd, spotsCmd } = require('../utils/consts');
+const { getChatDesc } = require('../utils/chatRepo');
+const showChatAction = require('../utils/chatAction');
 
-const logger = require('../logger/telegramLogger')('app_forecast_handleForecastReq');
+const t = (ctx) => (key, data) => ctx.i18n.t(key, data);
 
-const { botUsername, getForecastCmd } = require('../utils/consts');
-const { getSpotFromCommand } = require('../utils/spots');
-const showUploadStatus = require('../utils/showUploadStatus');
-
-const { saveDirPath, contextMetadataKeys } = require('../utils/consts');
-
-async function getForecast(ctx) {
-  logger.log(`processing request from ${ctx.message.from.first_name}(@${ctx.message.from.username})`);
-
-  const spot = getSpotFromCommand(ctx.message.text);
-
-  const { stop: stopShowUploadPhotoStatus } = await showUploadStatus(ctx);
-
-  let imagePath = '';
+async function replyWithForecast(ctx, spot) {
+  logger.log(`forecast ${spot.key} for ${getChatDesc(ctx)}`);
+  const { stop } = await showChatAction(ctx, 'typing');
   try {
-    imagePath = await Screenshot.getScreenshot(spot.url, spot.filename, saveDirPath);
+    const forecast = await openMeteo.getForecast(spot);
+    const text = formatForecast(forecast, spot, t(ctx), { locale: ctx.i18n.locale() });
+    const hint = ctx.i18n.t('botReplays.forecastReq.hint', { subscribeCmd, spotsCmd });
+    await ctx.replyWithHTML(`${text}\n\n${hint}`, { disable_web_page_preview: true });
   } catch (error) {
-    logger.error(error.stack || `error while getting the screenshot - ${error}`);
+    logger.error(error.stack || `forecast for ${spot.key} failed - ${error}`);
+    await ctx.reply(ctx.i18n.t('botReplays.forecastReq.failed'));
+  } finally {
+    stop();
   }
-
-  try {
-    const fileContent = await fs.readFileSync(imagePath);
-    ctx.replyWithPhoto({ source: fileContent }, {
-      caption: ctx.i18n.t('botReplays.forecastReq.forecastReqReply', {
-        spot: { ...spot, tName: ctx.i18n.t(spot.name) },
-        username: ctx.metadata[contextMetadataKeys.BOT_USERNAME],
-      }),
-      parse_mode: 'HTML',
-    });
-  } catch (error) {
-    const description = !(error.response === undefined || error.response === null) ? error.response.description : '';
-    logger.error(error.stack || `while sending forecast msg (#${error.code})\n${description}\n${error}`);
-  }
-  stopShowUploadPhotoStatus();
-  logger.debug('done');
 }
 
 const bot = new Composer();
 
-bot.command(`${getForecastCmd}`, getForecast);
-bot.command(`${getForecastCmd}@${botUsername}`, getForecast);
+bot.command(getForecastCmd, (ctx) => replyWithForecast(ctx, getSpotFromCommand(ctx.message.text)));
+// /spot_TelAviv, /spot_Haifa, ... as listed by /spots
+spotKeys.forEach((key) => {
+  bot.command(`spot_${key}`, (ctx) => replyWithForecast(ctx, spots[key]));
+});
 
 module.exports = bot;

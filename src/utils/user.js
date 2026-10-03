@@ -1,19 +1,33 @@
 const logger = require('../logger/telegramLogger')('app_forecast_users');
-
 const subscribeDao = require('../dao/subscribeDao');
 
-const isBlockBotError = (error) => (error.code === 403
-  && (
-    error.response.description === 'Forbidden: bot was blocked by the user'
-    || error.response.description === 'Forbidden: user is deactivated'
-  ));
+const GONE_DESCRIPTIONS = [
+  'bot was blocked by the user',
+  'user is deactivated',
+  'bot was kicked',
+  'chat not found',
+  'bot is not a member',
+  'group chat was upgraded to a supergroup chat',
+];
 
-const handleUserBlockBot = (chatId) => {
-  logger.log(`User#${chatId} was block bot, removing from db...`);
+/** True when Telegram tells us this chat can no longer receive our messages. */
+const isBlockBotError = (error) => {
+  if (!error) {
+    return false;
+  }
+  const response = error.response || {};
+  const code = error.code || response.error_code;
+  const description = String(response.description || error.description || '');
+  return (code === 403 || code === 400)
+    && GONE_DESCRIPTIONS.some((d) => description.includes(d));
+};
+
+const handleUserBlockBot = async (chatId) => {
+  logger.log(`Chat#${chatId} is unreachable (blocked/deleted), removing from subscribers...`);
   try {
-    subscribeDao.removeSubscriber(chatId);
+    await subscribeDao.removeSubscriber(chatId);
   } catch (e) {
-    logger.error(e.stack || `Failed to unregister #blocked user#${chatId} - ${e}`);
+    logger.error(e.stack || `Failed to unregister unreachable chat#${chatId} - ${e}`);
   }
 };
 

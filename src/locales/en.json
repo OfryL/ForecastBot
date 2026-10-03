@@ -1,40 +1,60 @@
 {
   "spots": {
-    "TelAviv": {
-      "name": "Tel-Aviv - Hilton"
+    "TelAviv": { "name": "Tel-Aviv - Hilton" },
+    "Haifa": { "name": "Haifa - The Peak" },
+    "Ashdod": { "name": "Ashdod" },
+    "Ashqelon": { "name": "Ashqelon" }
+  },
+  "compass": {
+    "N": "N", "NE": "NE", "E": "E", "SE": "SE", "S": "S", "SW": "SW", "W": "W", "NW": "NW"
+  },
+  "forecast": {
+    "header": "🏄 <b>${spot}</b> · ${weekday} ${date}, ${time}",
+    "conditions": "🌊 ${height} m · ⏱ ${period}s · 🧭 ${direction} (${degrees}°)",
+    "rating": {
+      "flat": "Flat",
+      "small": "Small, longboard day",
+      "fun": "Fun size",
+      "good": "Good waves!",
+      "big": "Big - experienced surfers only"
     },
-    "Haifa": {
-      "name": "Haifa - The Peak"
+    "wind": "💨 ${speed} kn from ${direction} (${type})",
+    "windType": {
+      "offshore": "offshore",
+      "onshore": "onshore",
+      "cross": "cross-shore"
     },
-    "Ashqelon": {
-      "name": "Ashqelon"
-    },
-    "Ashdod": {
-      "name": "Ashdod"
-    }
+    "temperature": "🌡 ${temperature}°C",
+    "todayPeak": "<b>Today:</b> up to ${height} m around ${time}",
+    "nextDaysTitle": "<b>Next days</b>",
+    "nextDayLine": "${emoji} ${weekday} ${date}: ${height} m · ${period}s · ${direction}",
+    "footer": "<a href=\"${url}\">Detailed report</a> · data: Open-Meteo"
   },
   "botReplays": {
     "langChanged": "ok",
-    "start": "Welcome to Israel`s first waves forecast telegram bot.\nsend me /getforecast to see more!\n<b>New</b> - you can /subscribe for every day forecast, stay tuned\n\n/lang_he החלף שפה לעברית",
+    "start": "Welcome to Israel's wave forecast bot 🏄‍♂️\n\n/${getForecastCmd} - current forecast (Tel-Aviv)\n/${spotsCmd} - forecast for other spots\n/${subscribeCmd} - daily forecast every morning\n/${liveVideoCmd} - live cam\n\n/${langHeCmd} החלף שפה לעברית",
+    "help": "Commands:\n/${getForecastCmd} [spot] - wave forecast\n/${spotsCmd} - list spots\n/${subscribeCmd} [spot] - toggle the daily forecast\n/${liveVideoCmd} - live cam\n/${langEnCmd} · /${langHeCmd} - language",
     "forecastReq": {
-      "forecastReqReply": "Wave forecast notification for ${spot.tName}\n<a href=\"${spot.url}\">More Info</a>\n\n@${username} to subscribe me!"
+      "hint": "/${subscribeCmd} for a daily forecast · /${spotsCmd} for more spots",
+      "failed": "Couldn't fetch the forecast right now, please try again in a few minutes 🙏"
     },
     "subscribeReq": {
-      "removeSubscriber": "You are now un-register",
-      "removeSubscriberFail": "Failed to un-register!",
-      "addSubscriber": "You are now register to forecast updates!\nTo un-register sent /${subscribeCmd} again any time.",
-      "addSubscriberFail": "Failed to register!"
+      "removeSubscriber": "You are now unsubscribed from the daily forecast.",
+      "removeSubscriberFail": "Failed to unsubscribe!",
+      "addSubscriber": "You are subscribed to the daily forecast for ${spot}!\nSend /${subscribeCmd} again any time to unsubscribe.",
+      "addSubscriberFail": "Failed to subscribe!",
+      "adminsOnly": "Only group admins can do that 🙁",
+      "unknownSpot": "I don't know that spot. Send /${spotsCmd} to see the available spots."
     },
     "liveVideo": {
-      "liveVideoCaption": "Live from ${spot.tName}\n/${spotsCmd} for more!",
-      "liveVideoCaptionTmp": "Live from ${spot.tName}"
+      "liveVideoCaption": "Live from ${spot}\n/${spotsCmd} for more!",
+      "unavailable": "The live cam is not available right now 📷"
     },
     "spots": {
       "getSpots": "Available spots:\n${spotsList}"
     }
   },
   "subscriberMulticastJob": {
-    "caption": "Wave forecast notification for ${spot.tName}\\n<a href=\"${spot.url}\">More Info</a>"
+    "title": "☀️ Good morning! Here is today's forecast:"
   }
 }
-

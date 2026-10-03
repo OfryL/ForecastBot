@@ -1,5 +1,18 @@
 {
-  "extends": [
-    "airbnb/base"
-  ]
+  "extends": ["airbnb/base"],
+  "env": {
+    "node": true,
+    "es2020": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2020
+  },
+  "globals": {
+    "fetch": "readonly",
+    "AbortController": "readonly",
+    "globalThis": "readonly"
+  },
+  "settings": {
+    "import/core-modules": ["node:test", "node:assert", "node:assert/strict", "node:fs", "node:path", "node:os"]
+  }
 }

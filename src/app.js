@@ -1,86 +1,57 @@
 const config = require('config');
-const fastify = require('fastify');
-const localtunnel = require('localtunnel');
 const bot = require('./appBot');
 const logger = require('./logger/telegramLogger')('app');
 const { startSubscriberForecastMulticastJob } = require('./utils/subscriberForecastMulticast');
 
-logger.debug(`running on '${process.env.NODE_ENV}' env`);
+logger.debug(`running on '${process.env.NODE_ENV || 'development'}' env`);
 
-const isTunnelEnable = config.get('telegramBot.tunnel');
-const tunnelPort = config.get('telegramBot.httpserver.localtunnelport');
+const isTunnelEnabled = config.get('telegramBot.tunnel');
+const port = config.get('telegramBot.httpserver.port');
 
-let server;
-if (isTunnelEnable) {
-  server = fastify({ logger: { level: config.get('logger.level.server'), prettyPrint: true } });
-}
+/** Webhook mode behind a localtunnel (handy on machines without a public IP). */
+const launchWithTunnel = async () => {
+  // eslint-disable-next-line global-require
+  const localtunnel = require('localtunnel');
+  const tunnel = await localtunnel({ port });
+  logger.log(`tunnel opened at ${tunnel.url}`);
+  tunnel.on('close', () => logger.warn('tunnel closed - webhook updates will stop arriving'));
+  tunnel.on('error', (err) => logger.error(err.stack || `tunnel error: ${err}`));
 
-const setupTunnel = async (onCloseCallback) => {
-  const tunnel = await localtunnel(tunnelPort, (err, t) => {
-    if (err) {
-      throw err;
-    }
-    logger.debug(t.url);
+  await bot.launch({
+    webhook: {
+      domain: tunnel.url, port, host: '127.0.0.1',
+    },
   });
-
-  tunnel.on('close', () => {
-    logger.debug('tunnel closed');
-    onCloseCallback();
-  });
-
-  return tunnel.url;
+  return () => tunnel.close();
 };
 
-const setupFastisyServer = (telegramBot) => {
-  server.log.debug('seting up server');
-  server.get('/', (request, reply) => {
-    reply.send({
-      hello: 'world',
-    });
-  });
-
-  server.use(telegramBot.webhookCallback('/secret-path'));
-
-  server.listen(tunnelPort, '127.0.0.1', (err) => {
-    if (err) {
-      logger.trace(err);
-      throw err;
-    }
-    logger.debug(`server listening on ${server.server.address().port}`);
-  });
+const launchWithPolling = async () => {
+  logger.debug('starting bot in long-polling mode');
+  await bot.launch();
+  return () => {};
 };
 
 const startApp = async () => {
-  startSubscriberForecastMulticastJob();
+  const job = startSubscriberForecastMulticastJob(bot.telegram);
+  const cleanup = isTunnelEnabled ? await launchWithTunnel() : await launchWithPolling();
+  logger.log(`bot @${bot.options.username || '?'} is up`);
 
-  if (isTunnelEnable) {
-    try {
-      const tunnelUrl = await setupTunnel(() => {});
-      bot.telegram.setWebhook(`${tunnelUrl}/secret-path`);
-      setupFastisyServer(bot);
-    } catch (err) {
-      logger.error(`Error on tunnel: ${err}`);
-    }
-  } else {
-    logger.debug('clearing old webhook');
-    let success = false;
-    try {
-      success = await bot.telegram.deleteWebhook();
-    } catch (e) {
-      logger.error(e.stack || `error clearing old webhook\n${e}`);
-    }
-
-    if (success) {
-      logger.debug('start bot on polling mode');
-      try {
-        bot.startPolling();
-      } catch (err) {
-        logger.error(err.stack || `error polling ${err}`);
-      }
-    } else {
-      logger.error('error clearing old webhook');
-    }
-  }
+  const shutdown = (signal) => {
+    logger.log(`received ${signal}, shutting down`);
+    job.stop();
+    cleanup();
+    bot.stop(() => process.exit(0));
+    setTimeout(() => process.exit(0), 5000).unref();
+  };
+  process.once('SIGINT', () => shutdown('SIGINT'));
+  process.once('SIGTERM', () => shutdown('SIGTERM'));
 };
 
-startApp();
+process.on('unhandledRejection', (reason) => {
+  logger.error((reason && reason.stack) || `unhandled rejection: ${reason}`);
+});
+
+startApp().catch((err) => {
+  logger.error(err.stack || `failed to start: ${err}`);
+  process.exit(1);
+});

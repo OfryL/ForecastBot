@@ -1,23 +1,6 @@
 const converter = require('node-m3u8-to-mp4');
 
-const test2 = async ({ liveUrl, savePath }) => converter(
-  liveUrl,
-  savePath,
-  // (status, index, total) => {
-  //   if (status === 'generating') {
-  // console.log('extracting...');
-  // } else if (status === 'downloading') {
-  // console.log(
-  //   `downloading process:${((index / total) * 100).toFixed(2)}%`,
-  // );
-  // } else if (status === 'combining') {
-  // console.log(
-  //   `combining mp4 process:${((index / total) * 100).toFixed(2)}%`,
-  // );
-  // } else {
-  // console.log(status);
-  // }
-  // },
-);
+// Captures an HLS (m3u8) live stream to an mp4 file. Requires ffmpeg on PATH.
+const getLiveStream = ({ liveUrl, savePath }) => converter(liveUrl, savePath);
 
-module.exports = test2;
+module.exports = getLiveStream;

@@ -1,7 +1,7 @@
 {
   "name": "ForecastBot",
-  "version": "1.1.0",
-  "description": "a telegram bot for wave forecasting of the israeli coast",
+  "version": "2.0.0",
+  "description": "A Telegram bot for wave forecasts along the Israeli coast (Open-Meteo marine data)",
   "main": "src/app.js",
   "scripts": {
     "start": "NODE_ENV=production node src/app.js",
@@ -10,7 +10,8 @@
     "start:prod": "cross-env NODE_ENV=production node src/app.js",
     "clean": "rimraf package-lock.json ./node_modules/ ./lib/*",
     "clean:compile": "rimraf ./lib/*",
-    "lint": "./node_modules/.bin/eslint ."
+    "lint": "eslint .",
+    "test": "node --test"
   },
   "repository": {
     "type": "git",
@@ -23,18 +24,11 @@
   },
   "homepage": "https://github.com/OfryL/ForecastBot#readme",
   "dependencies": {
-    "axios": "^0.19.2",
-    "bluebird": "^3.7.2",
+    "@seald-io/nedb": "^4.1.2",
     "config": "^3.3.1",
-    "fastify": "^3.2.0",
     "localtunnel": "^2.0.0",
-    "log4js": "^6.3.0",
-    "m3u8": "0.0.10",
-    "moment": "^2.27.0",
-    "nedb": "^1.8.0",
     "node-cron": "^2.0.3",
     "node-m3u8-to-mp4": "^2.0.2",
-    "phantom": "^6.3.0",
     "telegraf": "^3.38.0",
     "telegraf-i18n": "^6.6.0",
     "telegraf-ratelimit": "^2.0.0"
@@ -46,5 +40,8 @@
     "eslint-plugin-import": "^2.22.0",
     "nodemon": "^2.0.4",
     "rimraf": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }
