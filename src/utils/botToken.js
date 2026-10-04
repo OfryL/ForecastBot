@@ -1,7 +1,11 @@
 const config = require('config');
 
-const token = config.get('telegramBot.token');
+const token = config.has('telegramBot.token') ? config.get('telegramBot.token') : '';
 
-module.exports = {
-  token,
-};
+if (!token) {
+  throw new Error(
+    'Telegram bot token is missing. Set TELEGRAM_BOT_TOKEN or telegramBot.token in config/local.json',
+  );
+}
+
+module.exports = { token };

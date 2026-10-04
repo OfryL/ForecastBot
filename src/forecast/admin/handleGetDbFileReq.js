@@ -1,9 +1,14 @@
-const path = require('path');
-const logger = require('../../logger/telegramLogger')('app_forecast_handleSubscriberMulticastReq');
+const fs = require('fs');
+const logger = require('../../logger/telegramLogger')('app_forecast_handleGetDbFileReq');
+const { dbFilePath } = require('../../dao/subscribeDao');
 
 const handleGetDbFileReq = async (ctx) => {
   logger.log('Sending db file');
-  await ctx.replyWithDocument({ source: path.join(process.cwd(), 'lib', 'db', 'subscribers.db') });
+  if (!fs.existsSync(dbFilePath)) {
+    await ctx.reply('No subscribers db file yet.');
+    return;
+  }
+  await ctx.replyWithDocument({ source: dbFilePath });
 };
 
 module.exports = handleGetDbFileReq;

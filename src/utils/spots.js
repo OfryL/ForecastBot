@@ -1,40 +1,74 @@
+// Surf spots along the Israeli coast.
+// `url` points at the public Surfline report (magicseaweed.com, the previous
+// source, now redirects there). Coordinates feed the Open-Meteo marine API.
 const spots = {
   TelAviv: {
+    key: 'TelAviv',
     name: 'spots.TelAviv.name',
-    url: 'https://magicseaweed.com/Hilton-Surf-Report/3658/',
-    // liveUrl: 'http://212.179.113.90:1935/live/inter20.stream/playlist.m3u8',
+    lat: 32.0925,
+    lon: 34.7705,
+    url: 'https://www.surfline.com/surf-report/hilton-beach/584204204e65fad6a770913b',
     liveUrl: 'http://212.179.113.90:1935/live/inter10.stream/playlist.m3u8',
-    filename: 'forecastTelAviv',
   },
   Haifa: {
+    key: 'Haifa',
     name: 'spots.Haifa.name',
-    url: 'https://magicseaweed.com/Haifa-The-Peak-Surf-Report/3671/',
-    filename: 'forecastHaifa',
-  },
-  Ashqelon: {
-    name: 'spots.Ashqelon.name',
-    url: 'https://magicseaweed.com/Ashqelon-Surf-Report/3811/',
-    filename: 'forecastAshqelon',
+    lat: 32.8285,
+    lon: 34.9545,
+    url: 'https://www.surfline.com/surf-report/the-peak/584204204e65fad6a7709aa2',
   },
   Ashdod: {
+    key: 'Ashdod',
     name: 'spots.Ashdod.name',
-    url: 'https://magicseaweed.com/Ashdod-Surf-Report/4219/',
-    filename: 'forecastAshdod',
+    lat: 31.8100,
+    lon: 34.6350,
+    url: 'https://www.surfline.com/surf-report/ashdod/584204204e65fad6a7709ab5',
+  },
+  Ashqelon: {
+    key: 'Ashqelon',
+    name: 'spots.Ashqelon.name',
+    lat: 31.6760,
+    lon: 34.5530,
+    url: 'https://www.surfline.com/surf-report/ashkelon/584204204e65fad6a7709ab6',
   },
 };
 
-const getSpotFromCommand = (text) => {
-  const args = text.split(' ');
-  if (args.length > 0) {
-    const spot = spots[args[1]];
-    if (spot) {
-      return spot;
-    }
+const DEFAULT_SPOT_KEY = 'TelAviv';
+const spotKeys = Object.keys(spots);
+
+const normalizeKey = (key) => String(key).toLowerCase().replace(/[-_\s]/g, '');
+
+/** Case/format-insensitive lookup: "haifa", "Tel-Aviv", "telaviv" all resolve. */
+const findSpot = (key) => {
+  if (!key) {
+    return null;
   }
-  return spots.TelAviv;
+  const wanted = normalizeKey(key);
+  const match = spotKeys.find((k) => normalizeKey(k) === wanted);
+  return match ? spots[match] : null;
+};
+
+const getDefaultSpot = () => spots[DEFAULT_SPOT_KEY];
+
+/**
+ * Resolve a spot from a command message, e.g.
+ *   "/getforecast Haifa", "/getforecast@IsraelSurfBot ashdod", "/spot_Haifa".
+ * Falls back to the default spot.
+ */
+const getSpotFromCommand = (text = '') => {
+  const [command = '', ...args] = String(text).trim().split(/\s+/);
+  const spotCmd = /^\/spot_([^@\s]+)/i.exec(command);
+  if (spotCmd) {
+    return findSpot(spotCmd[1]) || getDefaultSpot();
+  }
+  return findSpot(args[0]) || getDefaultSpot();
 };
 
 module.exports = {
   spots,
+  spotKeys,
+  DEFAULT_SPOT_KEY,
+  findSpot,
+  getDefaultSpot,
   getSpotFromCommand,
 };

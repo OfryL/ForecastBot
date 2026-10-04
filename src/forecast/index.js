@@ -1,19 +1,15 @@
 const Composer = require('telegraf/composer');
 
-const errorHandlerMiddleware = require('../middleware/errorHandler/errorHandlerMiddleware');
-
 const admin = require('./admin');
-
+const start = require('./start');
 const getForecast = require('./getForecast');
 const subscribe = require('./subscribe');
-const start = require('./start');
-const liveVideo = require('./liveVideo');
-const spots = require('./spots');
 const langSet = require('./langSet');
+const spots = require('./spots');
+const liveVideo = require('./liveVideo');
 
 const bot = new Composer();
 
-bot.use(errorHandlerMiddleware);
 bot.use(admin);
 bot.use(start);
 bot.use(getForecast);

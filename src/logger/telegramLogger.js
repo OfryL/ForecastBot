@@ -8,8 +8,8 @@ const TELEGRAM_LOGGER = 'telegramLogger';
 const debug = util.debuglog(TELEGRAM_LOGGER);
 const logger = sysLogger(TELEGRAM_LOGGER);
 
-const token = config.get('telegramBot.token');
-const loggerChatId = config.get('telegramBot.loggerChatId');
+const token = config.has('telegramBot.token') ? config.get('telegramBot.token') : '';
+const loggerChatId = config.has('telegramBot.loggerChatId') ? config.get('telegramBot.loggerChatId') : '';
 
 function formatHtml(obj) {
   let str = obj.toString();
@@ -32,11 +32,15 @@ const sendMessageViaHttpReq = function (msgText, responseHandler) {
     host: 'api.telegram.org', port: 443, path: `/bot${token}/sendMessage`, method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data) },
   };
   const req = http.request(options, responseHandler);
+  req.on('error', (err) => logger.error(`telegram log http req failed: ${err.message}`));
   req.write(data);
   req.end();
 };
 
 const logToRemote = function (namespace, lvl, msg) {
+  if (!loggerChatId || !token) {
+    return;
+  }
   const msgText = formatMsgText(namespace, lvl, msg);
   try {
     logger.debug(`Sending logs to remote chatId#${loggerChatId}`);

@@ -1,62 +1,57 @@
-const path = require('path');
-const fs = require('fs');
-const logger = require('../logger/telegramLogger')('app_forecast');
-
-const Bot = require('../bot');
+const cron = require('node-cron');
+const config = require('config');
+const logger = require('../logger/telegramLogger')('app_subscriberForecastMulticast');
 const { i18Mw: { i18n } } = require('../middleware');
+const openMeteo = require('../services/openMeteo');
+const { formatForecast } = require('../forecast/formatForecast');
+const { findSpot, getDefaultSpot } = require('./spots');
+const { forEachSubscriber } = require('./forEachSubscriber');
+const { DEFAULT_LANG, SUPPORTED_LANGS } = require('./consts');
 
-const Screenshot = require('./screenshot');
-const subscriberMulticastJob = require('./subscriberMulticastJob');
-const { isBlockBotError, handleUserBlockBot } = require('./user');
-const { getSpotFromCommand } = require('./spots');
-const { saveDirPath } = require('./consts');
-const executeMulticastReq = require('./executeMulticastReq');
+const resolveLang = (lang) => (SUPPORTED_LANGS.includes(lang) ? lang : DEFAULT_LANG);
 
-const bot = Bot();
+/** Send the daily forecast to every subscriber (in their spot + language). */
+const subscriberForecastMulticast = async (telegram) => {
+  const messageCache = new Map();
 
-const subscriberForecastMulticast = async () => {
-  const spotsToPath = {};
-
-  const msgHandler = async (subscriber) => {
-    const spot = getSpotFromCommand(subscriber.spot);
-    const pathToImage = path.join(saveDirPath, `${spot.filename}.png`);
-    if (!spotsToPath[subscriber.spot]) {
-      try {
-        await Screenshot.getScreenshot(spot.url, spot.filename, saveDirPath);
-      } catch (err) {
-        logger.error(err.stack || `subscriberForecastMulticast - ${err}`);
-      }
-      spotsToPath[subscriber.spot] = pathToImage;
+  const buildMessage = async (spot, lang) => {
+    const cacheKey = `${spot.key}:${lang}`;
+    if (!messageCache.has(cacheKey)) {
+      const forecast = await openMeteo.getForecast(spot);
+      const t = (key, data) => i18n.t(lang, key, data);
+      const text = formatForecast(forecast, spot, t, { locale: lang });
+      messageCache.set(cacheKey, `${t('subscriberMulticastJob.title')}\n${text}`);
     }
-
-    try {
-      logger.debug(`pathToImage: ${pathToImage}`);
-      const fileContent = await fs.readFileSync(pathToImage);
-      const lang = subscriber.lang || 'he';
-      await bot.telegram.sendPhoto(subscriber.chatId, {
-        source: fileContent,
-      }, {
-        caption: i18n.t(lang, 'subscriberMulticastJob.caption',
-          { spot: { ...spot, tName: i18n.t(lang, spot.name) } }),
-        parse_mode: 'HTML',
-      });
-    } catch (error) {
-      if (isBlockBotError(error)) {
-        handleUserBlockBot(subscriber.chatId);
-      } else {
-        logger.error(error.stack || `error sendPhoto to subscriber: ${JSON.stringify(subscriber)} on spot :${JSON.stringify(spot)} - ${error}`);
-      }
-    }
-    logger.debug('done');
+    return messageCache.get(cacheKey);
   };
 
-  await executeMulticastReq(msgHandler);
+  return forEachSubscriber(async (subscriber) => {
+    const spot = findSpot(subscriber.spot) || getDefaultSpot();
+    const lang = resolveLang(subscriber.lang);
+    const text = await buildMessage(spot, lang);
+    await telegram.sendMessage(subscriber.chatId, text, {
+      parse_mode: 'HTML',
+      disable_web_page_preview: true,
+    });
+  });
 };
 
-const startSubscriberForecastMulticastJob = () => {
-  logger.debug('setup cron job');
-  subscriberMulticastJob.setup(subscriberForecastMulticast);
-  // subscriberForecastMulticast();
+const startSubscriberForecastMulticastJob = (telegram) => {
+  const expression = config.get('forecast.dailyBroadcastCron');
+  const timezone = config.get('forecast.timezone');
+  if (!cron.validate(expression)) {
+    throw new Error(`invalid forecast.dailyBroadcastCron: "${expression}"`);
+  }
+  logger.debug(`scheduling daily forecast broadcast "${expression}" (${timezone})`);
+  return cron.schedule(expression, async () => {
+    logger.log('running daily forecast broadcast');
+    try {
+      const { sent, failed } = await subscriberForecastMulticast(telegram);
+      logger.log(`daily forecast broadcast done: ${sent} sent, ${failed} failed`);
+    } catch (err) {
+      logger.error(err.stack || `daily forecast broadcast failed - ${err}`);
+    }
+  }, { scheduled: true, timezone });
 };
 
-module.exports = { startSubscriberForecastMulticastJob };
+module.exports = { subscriberForecastMulticast, startSubscriberForecastMulticastJob };
